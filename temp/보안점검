@@ -1,0 +1,27 @@
+보안 점검
+
+bosh paasta 
+	 https://m80.mailplug.com/webmail/lists#%7B%22s_fnum%22%3A%221%22%2C%22s_mread%22%3A%22%22%2C%22view%22%3A258%2C%22list%22%3Atrue%2C%22type%22%3A%22%22%2C%22t%22%3A1675037206621%2C%22mailrefresh%22%3A%22%22%2C%22mdl%22%3A%22lists%22%7D
+	 : 보안점검 진행한 git branch로 clone하기 
+	 : git clone -b oss-01 --single-branch https://github.com/PaaS-TA/paasta-deployment.git
+	 : git clone https://github.com/PaaS-TA/portal-deployment.git -b oss-01
+
+
+
+paasta-service
+	 https://mail.google.com/mail/u/0/#inbox/FMfcgzGrcPGCXqDNHsTHXknTcwLzdQCQ
+
+보안점검 순서
+		bosh -> paasta -> //   portal -> service
+
+
+rapid7: 
+	보안점검프로그램
+	guide: 
+		rapid7-insightvm-install-guide.md
+	INFO
+		ID 		: paasta
+		PW 		: PaaS-TA@2023
+		url		: http://bindingip(203.255.255.123):3780
+		login
+		key		: mail로 전달-> install
