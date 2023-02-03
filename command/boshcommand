@@ -1,2 +1,32 @@
 1. 파일 값 찾기
 	$ sha1sum "파일명"
+2. command 문자열 치환
+	:%s/foo/bar
+3. 현재 파일 경로
+	pwd
+4. 이전의 파일 경로로 돌아가기
+	cd -
+5. stemcell
+
+6. 현재 ip주소 보기
+	curl ifconfig.me
+7. unzip 파일경로
+	unzip [압축 파일명.zip] -d [압축 풀 경로]
+
+8. 파일명과 같은 파일폴더를 만들며 해당폴더에 unzip
+	
+	```shell
+	for file in `ls *.zip`;
+	do
+	       unzip "${file}" -d "${file:0:-4}";
+	done
+	```
+	
+9. 여러개 zip폴더 압출 해제하기  
+	
+	```shell
+	for i in *.zip;
+	do 
+		unzip $i -d /path/to/put;
+	done
+	```
