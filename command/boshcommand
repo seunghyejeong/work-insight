@@ -30,3 +30,27 @@
 		unzip $i -d /path/to/put;
 	done
 	```
+
+10. 파티션 밀기 
+	cat /dev/null > post-start.stderr.log
+
+11. deployment restart stop .. 
+	bosh -d mongodb cck
+
+12. 명령어 한번에 실행하기 
+	"&&"활용
+	cd /tmp && unzip cce-scripts && cd scripts && source linux_info.sh 
+
+13. 용량 확인 및 확보하기
+	df -h
+	df -i
+
+	<파일 검색>
+	for i in "경로/*"; do echo $i; find $i | wc -l; done
+
+ 	<경로에 있는 파일 검색> 
+ 	 sudo du -hsx /* | sort -rh | head -n 40
+ 	 sudo du -hsx /home/* | sort -rh | head -n 35
+
+ 	<파티션밀기>
+ 	 cat /dev/null > post-start.stderr.log

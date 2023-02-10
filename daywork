@@ -1,0 +1,190 @@
+# 230126
+
+1. cce-check git push  :: 완료 
+2. 오픈랩 :: 인증서 발급단계 
+
+# 230127
+
+1. 오픈랩 설치 
+	:: paasta 배포 진행중
+
+
+
+# 230130
+
+1. 오픈랩 :: 오전중에 완료하기 
+	:: 완료
+
+2. 보안점검 
+	- rapid7 설치중 
+	- cce-check (common/bosh/service) release 재구성
+	- bosh 배포 :: 완료
+	- bosh cce-check :: 진행중 
+
+3. 연말정산 자료 메일 회신하기 :: 완료 
+	지원선은 부양가족인가.. 부양가족 아님
+
+# 230131
+
+1. bosh : cceh -check : 완료
+   paasta : 
+
+# 230131
+registercontroller.java
+boardController.java
+logincontroller.java
+index.jsp
+boardlist.jsp
+
+#230201
+1. paasta 배포 및 cce-check
+	:: 완료  
+2. portal-api 배포 
+	:: 완료 
+
+# 230202
+	1. 보안점검 
+	 	- portal API/UI 
+		  ::CCE 점검완료
+	
+
+	3. portal linux 실행
+		:완료
+	4. portal ui/api mysql 해당 파일 cce_scripts에서 찾고 돌리기 
+
+
+
+CCE > Linux Info > CVE 
+
+infra 
+	linux			o
+	linux info 		o
+portal 
+	cve 			ㅇ		
+
+
+redis 			mariadb		paas-ta-on-demand	redis 
+	linux 			o              o
+	linux-info	    o              o
+	cce (redis) 	o			   o              o
+ 	cve				
+	mysql(mariadb)  o
+	
+	/var/vcap/store/mariadb/bin/mysql 
+	mysql_8.0_v4.1.bin		
+	/var/vcap/store/mariadb/mariadb.cnf
+
+
+
+	#0206-7
+
+	- 보안점검 
+			
+	service		linux 	  linux-info		cce 		 cve 
+	
+	rabbitmq	  o    	     o 				  o 		   o
+	
+	lifecycle     o          ㅇ 	           o           o
+					(postgresql: o  )
+	
+    glusterfs     ㅇ 		  ㅇ   			 ㅇ 		  ㅇ	 
+
+
+	mysql         ㅇ 		  ㅇ	  		  ㅇ          ㅇ
+		
+	gateway       ㅇ  	      ㅇ			  ㅇ          ㅇ 
+			
+
+	logging-ser   ㅇ 		  ㅇ 			  ㅇ 		  ㅇ 
+
+	mongodb   	:: 배포 진행중 
+
+	pinpoint      ㅇ 		  ㅇ  			  ㅇ 		  ㅇ 	
+
+
+	pipeline      ㅇ		  ㅇ 			  ㅇ 	      ㅇ
+
+	source-ctr    ㅇ 		  ㅇ 			  ㅇ 		  ㅇ 
+
+
+/var/vcap/packages/pxc/bin/mysql
+/var/vcap/jobs/pxc-mysql/config/my.cnf
+/var/vcap/data/sys/run/pxc-mysql/mysqld.sock
+
+
+/var/vcap/packages/influxdb/influxdb-1.8.10-1/usr/bin/influx
+/var/vcap/jobs/influxdb/config/influxdb.conf
+/var/vcap/store/influxdb/meta/meta.db
+
+10.160.64.39
+8086
+1
+root/PaaS-TA2022
+
+Error: Link 
+'portal-registration' 
+in job 'paas-ta-portal-log-api'
+from instance group 'log-api' 
+consumes from deployment 'portal-api', 
+but the deployment does not exist 
+:: portal api service 필요 ..?
+
+
+/var/vcap/packages/mariadb/bin/mysql
+
+/var/vcap/packages/mariadb/bin/mariadb
+/var/vcap/jobs/mariadb/config/mariadb.cnf
+
+
+
+#0209
+
+공모전 시작작자가가가가가가 
+
+[공모전]
+
+공모전 운영자 포털
+	http://paas-ta.co.kr/admin/admin.jsp 
+	내부 ip로만 접속 가능 (wifi 사용 안됨)
+	id: pass-ta
+	pw: pstamaster19!
+공모전 사용자 포털
+	http://paas-ta.co.kr
+
+1. 기능 분석 (완료 2023.02.09)
+	: txt형태로 가능 / 기능이 어떤 것들이 있는지 분석.
+	: 관리자 / 사용자 페이지별로 분석 
+	: 홈페이지에 어떤 기능이 있는것인지 분석용도임
+	
+2. 전자정부프레임워크 활용해서 기본틀(관리자 페이지) 만들기
+
+	: sitemesh 와 유사한 라이브러리 사용 (대표포털 user 참조)
+	: 대표포털이 include 형태로 되어있을경우 라이브러리 사용
+
+3. 데이터베이스 dump 및 구현  (완료 2023.02.09)
+	: 백업 > (이세영전임님 도움)
+	: 로컬에 DB 환경 구축 (정승혜 혼자 !!!)
+
+4. 관리자 로그인 로직 생성 
+	: 이전 로그인 로직 확인 및 재구현 
+	: 예를 들어 내부 ip로만 접속이 가능하다던가 글조회시 비밀번호 입력 해야하는거 등등..
+
+---------- 화면설계서 백전임님께서 공유해주시면 ------------
+각 메뉴별 개발 (공지사항, 묻고답하기, 수상결과 등!! )
+해당 메뉴들이 관리자 쪽에서 활용될 수 있으면 좋겠다.
+
+
+#0210
+
+- 전자정부프레임워크 활용하여 기본틀 만들기 
+	sitemesh
+- 관리자 로그인 로직 생성 
+
+
+
+
+
+
+
+
+

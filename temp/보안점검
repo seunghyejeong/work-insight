@@ -151,5 +151,55 @@ service
 		pipeline
 			10.160.63.30~42
 			haproxy == paasta haproxy?
-			
+		pinpoint ㅇ
+			10.160.60.24
 
+
+- gateway-service :: linux info, mysql, tomcat 진행 보류
+ 
+
+- pipeline:
+	Task 1791 | 01:58:16 | 
+	Deprecation: Global 'properties' are deprecated. Please define 'properties' at the job level.
+	Task 1791 | 01:58:17 | 
+	Error: 
+	Instance group 'ci_server' has 1 instances but was allocated 2 static IPs in network 'default'
+	:: ci server는 instance 2개 
+
+
+- failing이 떠도 linux-info는 진행
+
+- loggingservice:
+	loggingservice는 guide대로 진행
+
+	Error: Link 
+	'portal-registration' 
+	in job 'paas-ta-portal-log-api'
+	from instance group 'log-api' 
+	consumes from deployment 'portal-api', 
+	but the deployment does not exist 
+	:: portal api service 필요 ..?
+
+- mongodb
+
+	Evaluating manifest:
+	  Error 'operation [3] in 
+	  operations/cce-check.yml failed': 
+	  Expected to find exactly one matching array item for path '/instance_groups/name=mongodb_slave3' 
+	  but found 0
+ 	mongdb는 cce-check.yml파일이 변경되어야함.
+ 	(default instance가 3개인데 2개로 바뀜 slaves3/master3 삭제 후 배포해야함 )
+
+# 0208
+
+ 	보안점검 완룡ㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇㅇ
+
+ 	
+
+ CVE CCE 보안 점검 및 결과서 작성 완료했습니다. 
+ 	- ap_oss-01_bosh_director 
+ 	- ap_oss-01_core
+ 	- ap_oss-01_portal_oss-01
+ 	- ap_oss-01_service_oss-01
+
+ 	씨앤에프시스템 2/16일 오전10시 
