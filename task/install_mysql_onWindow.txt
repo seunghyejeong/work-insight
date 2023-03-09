@@ -1,0 +1,58 @@
+install mysql 
+
+
+window
+
+- 먼저 경로나 컴퓨터 이름이 영어로만 되어있어야함.
+- window에 server설치 후 command 창 이용하는게 쉬움
+
+
+1. mysql server 설치 
+	- mysql installer 이용 
+	- server만 체크 후 설치 
+----- 설치 완료 후 진행 --------
+2. set "Edit the system environment variables".
+3. "System Variables" section and find the "Path" variable. Click on "Edit".
+4.  click on "New" and add the directory where the MySQL executable is located  
+5. C:\Program Files\MySQL\MySQL Server 8.0\bin\
+6. computer restart
+7. open windowsPowershell
+8. `cd C:\Program Files\MySQL\MySQL Server 8.0\bin\`
+9. `mysql -u root -p`
+
+
+useage
+- mysql -u root -p ; 1234 ;
+- use paasta_edm
+- use paasta_edm;
+- show databases;
+- DROP DATABASE testdb;
+- GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost';
+-flush privileges;
+
+
+-use mysql
+-select host, user from user;
+
+
+복구;;
+1. git bash 이용 log 파일을  sql 파일로 
+jeongbami@jeonbami MINGW64 /c/ProgramData/MySQL/MySQL Server 8.0/Data
+$ mysqlbinlog /c/ProgramData/MySQL/MySQL Server 8.0/Data/JEONBAMI-bin.000001 > JEONBAMI-bin.000001.sql
+mysqlbinlog: File 'C:/ProgramData/MySQL/MySQL' not found (OS errno 2 - No such file or directory)
+ERROR: Could not open log file
+
+DATA경로
+C:\ProgramData\MySQL\MySQL Server 8.0\Data
+
+실제 경로
+C:\Program Files\MySQL\MySQL Server 8.0\bin
+
+(redirection) >
+윈도우에서는 실행이 안됨 
+
+Get-Content JEONBAMI-bin.000001.sql | mysql.exe  -u root -p  1234
+cmd /c 'mysql.exe  -u my_service -p  my_service < mysql-dump.sql'
+
+걍 안됨 재설치 하는게 속편함
+'

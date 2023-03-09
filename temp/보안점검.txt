@@ -60,12 +60,12 @@ PostgreSQL 수동 점검
 
 		1. postgreSQL 실행파일이 존재하는 디렉터리 경로를 입력해주세요.
 		(ex. /usr/pgsql-10/bin/ 입력): 
-		/var/packages/postgres-13/bin
- /var/vcap/data/packages/postgres-11.17/cd687b9e0e8c42c83e42d421db7e024c6bfe81e2/bin/
+		/var/vcap/packages/postgres-13/bin
+
 		2. PostgreSQL 설정파일들이 존재하는 디렉터리 경로를 입력해주세요.
 		(ex. /var/lib/pgsql/10/data 입력): 
 		/var/vcap/store/postgres-13
-		/var/vcap/store/postgres/postgres-11.17
+
 		3. 관리자 계정에 부여된 IP를 입력해 주세요. (ex. localhost 또는 127.0.0.1): 
 		localhost
 
@@ -202,7 +202,7 @@ service
  	- ap_oss-01_portal_oss-01
  	- ap_oss-01_service_oss-01
 
- 	씨앤에프시스템 2/16일 오전10시 
+
 	
 	
 	
@@ -229,138 +229,3 @@ bosh
 
 
 scp -i jumpbox.key -o StrictHostKeyChecking=no jumpbox@10.0.21.10:/tmp/* .
-
-계정 정보 미리 드릴게요 ...ㅎㅎ 
----
-# luna vsphere
-
-host
-- 10.0.20.13
-user
-- ubuntu
-pw
-- PaaS-TA@luna
-
-====================================================
-
-# luna rapid-7 vsphere
-
-host
-- 10.0.20.15
-user
-- ubuntu
-pw
-- PaaS-TA@luna
-
-username: paasta
-pw: PaaS-TA@2023
-
-====================================================
-
-#Deployment 삭제
-$ bosh -e micro-bosh delete-deployment -d paasta
-$ bosh -e micro-bosh delete-deployment -d portal-ui
-$ bosh -e micro-bosh delete-deployment -d portal-api
-
-#가비지 삭제
-$ bosh -e micro-bosh clean-up --all
-
-#Bosh 삭제
-$ ./delete-deploy-{iaas}.sh
-
-#완전초기화 작업
-$ rm -rf $HOME/.bosh
-$ rm -rf $HOME/.cf
-$ rm -rf $HOME/.credhub
-$ rm -rf $HOME/.uaac.yml
-$ rm -rf $HOME/workspace/paasta-5bosh en.0/deployment/bosh-deployment/aws/creds.yml
-
-가능(코어 없이 배포 성공)
-gateway
-glusterfs
-lifecycle
-mongodb
-pinpoint
-pipeline
-source control
---------------------
-불가능( 코어 없이 배포 실패)
-logging-service --> core 및 portal api 필요
-mysql
-rabbitmq
-redis 
-
-
-
-- singleblobstore nginx  10.10.1.17
-	 /var/vcap/jobs/blobstore/config/nginx.conf
-	 /var/vcap/packages/nginx_webdav
-	 
-	/var/vcap/packages/nginx_webdav/sbin/nginx
-	 
-	 /var/vcap/jobs/blobstore/config/nginx.conf
-	 
-	 
-- api
-	/var/vcap/packages/bpm/bin/tini -w -s -- /var/vcap/packages/nginx/sbin/nginx -c /var/vcap/jobs/cloud_controller_ng/config/nginx.conf
-    /var/vcap/packages/nginx/sbin/nginx -c /var/vcap/jobs/cloud_controller_ng/config/nginx.conf
-	
-- uaa
-	/var/vcap/packages/uaa/jdk/bin/java
-	/var/vcap/data/uaa/tomcat/conf/logging.properties
-	/var/vcap/data/uaa/cert-cache/cacerts
-	/var/vcap/data/uaa/tomcat
-	/var/vcap/data/uaa/tomcat
-	/var/vcap/sys/log/uaa/
-	/var/vcap/data/uaa/tomcat/temp
-	
-	
-	보시 파스타는 12존에서하고  서비스는 34567존으로 하기로했어용
-	/var/vcap/store/mariadb/bin/mysql
-/var/vcap/store/mariadb/mariadb.cnf
-/var/vcap/store/mariadb-10.5.17-linux-x86_64/include/mysql/server/mysql/psi/mysql_socket.h
-/var/vcap/data/root_tmp/mysql.sock
-/var/tmp/mysql.sock
-
-
-
-
-/var/vcap/packages/uaa/jdk/bin/java 
-/var/vcap/data/uaa/tomcat/conf/logging.properties
-/var/vcap/jobs/uaa/config/log4j2.properties
-/var/vcap/data/uaa/tomcat/bin/tomcat-juli.jar
-/var/vcap/data/uaa/tomcat
-/var/vcap/data/packages/uaa/fe018723680f91c9919be3fcc14987968fb8dfad/tomcat/conf/tomcat-users.xml
-/var/vcap/data/packages/uaa/fe018723680f91c9919be3fcc14987968fb8dfad/tomcat/conf/tomcat-users.xsd
-/var/vcap/data/packages/uaa/fe018723680f91c9919be3fcc14987968fb8dfad/tomcat/webapps
-
-
-
-
-/var/vcap/packages/nginx/sbin/nginx
-/var/vcap/jobs/cloud_controller_ng/config/nginx.conf
-/var/vcap/packages/nginx/sbin/nginx
-/var/vcap/jobs/cloud_controller_ng/config/nginx.conf
-
-/var/vcap/jobs/uaa/config
-/var/vcap/jobs/uaa/bin/uaa
- /var/vcap/packages/uaa/jdk/bin/java
- /var/vcap/data/uaa/tomcat/conf/logging.properties
-/var/vcap/sys/log/uaa/
-/var/vcap/data/uaa/cert-cache/cacerts
-/var/vcap/data/uaa/tomcat 
-
-
-/var/vcap/packages/uaa/jdk/bin/java
-/var/vcap/data/uaa/tomcat/conf/logging.properties
-
-/var/vcap/data/packages/uaa/fe018723680f91c9919be3fcc14987968fb8dfad/tomcat/conf/tomcat-users.xml
-/var/vcap/data/packages/uaa/fe018723680f91c9919be3fcc14987968fb8dfad/tomcat/conf/tomcat-users.xsd
-
-
-
-
-
-/var/vcap/data/packages/postgres-11.17/cd687b9e0e8c42c83e42d421db7e024c6bfe81e2/bin
-/var/vcap/store/postgres/postgres-11.17
-5524

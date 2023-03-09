@@ -1,0 +1,534 @@
+ Kubernets install
+
+install tool
+	kubeadm
+	kubespary
+
+CNI(Container Network Interface)
+	Container간 통신을 지원하는 VxLAN. Pod Network라고도 부름
+
+
+1. master 1개 node 2개 생성
+	master bamikube-master
+	node1  bamikube-node1
+	node2  paasta-ta-bami
+
+2. all inception에  docker 설치
+	https://docs.docker.com/desktop/install/linux-install/
+	
+sudo apt-get update
+ 	
+sudo apt-get install -y \
+ca-certificates \
+curl \
+gnupg \
+lsb-release
+
+sudo mkdir -m 0755 -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+echo \
+"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+apt-get update
+
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+
+systemctl enable docker
+systemctl start docker
+systemctl start docker
+
+sudo docker run hello-world
+
+
+3. kubernetes install 
+	1) 환경 설정
+
+swapoff -a && sed -i '/swap/s/^/#/' /etc/fstab
+nc 127.0.0.1 6443
+	2) kubeadm, kubectl, kubelet 설치
+
+		apt-get update
+		apt-get install -y apt-transport-https ca-certificates curl
+		curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+		echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+		apt-get update
+		 apt-get install -y kubelet kubeadm kubectl
+		 apt-mark hold kubelet kubeadm kubectl
+	3) control-plane 구성
+	4) worker node구성
+	5) 설치 확인 
+
+
+=======================================================================================[minikube]
+
+이전에 Docker kuberctl 설치하기
+
+install
+
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+alias kubectl="minikube kubectl --"
+
+
+	issue	
+
+	1) unable conf 어쩌고저쩌고
+		minikube start --driver=docker
+		minikube config set driver docker
+	2) 
+	E0228 07:09:45.921494    8914 memcache.go:238] couldn't get current server API group list: Get "http://localhost:8080/api?timeout=32s": dial tcp 127.0.0.1:8080: connect: connection refused
+	The connection to the server localhost:8080 was refused - did you specify the right host or port?
+
+	docker 설치 후 /var/run/docker.sock의 permission denied 
+		sudo chmod 666 /var/run/docker.sock	
+		sudo chown root:docker /var/run/docker.sock
+	
+ minikube start
+ 	Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
+
+ kubectl get po -A
+ 	NAMESPACE     NAME                               READY   STATUS    RESTARTS      AGE
+	kube-system   coredns-787d4945fb-hwwhq           1/1     Running   0             85s
+	kube-system   etcd-minikube                      1/1     Running   0             99s
+	kube-system   kube-apiserver-minikube            1/1     Running   0             101s
+	kube-system   kube-controller-manager-minikube   1/1     Running   0             97s
+	kube-system   kube-proxy-j2zvg                   1/1     Running   0             85s
+	kube-system   kube-scheduler-minikube            1/1     Running   0             97s
+	kube-system   storage-provisioner                1/1     Running   1 (53s ago)   94s
+
+---------------------- sub command창에서 실행
+minikube dashboard
+
+---------------------- main command back
+
+docker images
+REPOSITORY                    TAG       IMAGE ID       CREATED       SIZE
+gcr.io/k8s-minikube/kicbase   v0.0.37   01c0ce65fff7   4 weeks ago   1.15GB
+
+http://192.168.49.2:32473
+
+
+
+
+====================================================================================== [kubeadm]
+
+
+#Master, Worker
+$ sudo apt install ntp
+
+#Master
+$ sudo service ntp reload
+$ sudo ntpq -p
+
+#Worker
+$ sudo vi /etc/ntp.conf
+...
+#모든 pool과 server 주석처리
+server 10
+
+#Worker
+$ sudo systemctl restart ntp
+$ sudo ntpq -p
+
+#Master, Worker
+$ swapoff -a
+
+
+
+
+#Master, Worker
+$ cat > docker.sh
+#!/usr/bin/env bash
+## INFO: https://docs.docker.com/engine/install/ubuntu/
+set -euf -o pipefail
+DOCKER_USER=ubuntu
+# Install dependencies
+sudo apt-get update && sudo apt-get install -y \
+apt-transport-https \
+ca-certificates \
+curl \
+gnupg \
+lsb-release
+# Add Docker’s official GPG key
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --yes --dearmor -o /usr/share/keyrings/docker-archive-keyring.gp
+# Set up the stable repository
+echo \
+"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/lin
+$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+# Install Docker CE
+sudo apt-get update && sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+# Use Docker without root
+sudo usermod -aG docker $DOCKER_USER
+##############################enter -> ctrl+c
+$ chmod +x docker.sh
+$./docker.sh
+
+
+
+
+
+#Master, Worker
+$ cat > docker-compose.sh
+#!/usr/bin/env bash
+## INFO: https://docs.docker.com/compose/install/
+set -euf -o pipefail
+DOCKER_COMPOSE_VERSION=v2.1.1
+# Download and install
+sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)"
+sudo chmod +x /usr/local/bin/docker-compose
+##############################enter -> ctrl+c
+$ chmod +x docker-compose.sh
+$./docker-compose.sh
+
+
+
+
+#Master, Worker
+$ sudo mkdir /etc/docker
+$ cat <<EOF | sudo tee /etc/docker/daemon.json
+{
+"exec-opts": ["native.cgroupdriver=systemd"],
+"log-driver": "json-file",
+"log-opts": {
+"max-size": "100m"
+},
+"storage-driver": "overlay2",
+"runtimes": {
+"nvidia": {
+"path": "nvidia-container-runtime",
+"runtimeArgs": []
+}
+},
+"default-runtime": "nvidia"
+}
+EOF
+
+
+$ sudo systemctl daemon-reload
+
+$ sudo systemctl restart docker
+
+
+#Master, Worker (root계정)
+$ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+$ sudo cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+$ sudo apt update
+
+
+
+
+#Master, Worker
+#/etc/containerd/config.toml 파일에서 disabled_plugins 항목에서 CRI 제거
+$ sudo vim /etc/containerd/config.toml
+...
+disabled_plugins = [""]
+...
+
+
+
+$ sudo systemctl restart containerd
+
+
+
+$ sudo kubeadm init --apiserver-advertise-address 10.100.11.209 --pod-network-cidr=192.168.10.0/24
+--apiserver-advertise-address 옵션은 마스터 노드의 API Server 주소를 설정할 때 사용하는 옵션이다. 워커노드들은 이 API 주소로 Master Node와 통신을 한다.
+만약 Master Node를 다중으로 구성하였다면 --control-plane-endpoint 옵션을 사용하여 엔드 포인트를 설정할 수 있다. 
+
+
+
+
+
+#Master
+$ mkdir -p $HOME/.kube
+$ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+$ sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+
+
+# Worker
+$ sudo kubeadm join 10.100.11.209:6443 --token s43nna.n2uzng4pl5r2x74j \
+--discovery-token-ca-cert-hash sha256:780917540b1d105299641788d848b8edad00caca640ee842d82ac987097a9a1
+
+
+
+masternode
+
+kubeadm init
+
+kubeadm reset
+
+sudo kubeadm init --apiserver-advertise-address 10.170.70.225 --pod-network-cidr=192.168.10.0/24
+
+netstat -nap
+
+1. 특정포트 외부에서 접속할 수 있도록 열기 (외부에서 접속할 수 있도록 포트 OPEN)
+아래는 외부에서 들어오는(INBOUND) TCP포트 12345의 연결을 받아들인다는 규칙을 1번 방화벽 규칙으로 추가한다는 의미이다.
+
+1.1 TCP PORT일 경우
+# iptables -I INPUT 1 -p tcp --dport 12345 -j ACCEPT
+
+-I: 새로운 규칙을 추가한다.
+-p: 패킷의 프로토콜을 명시한다.
+-j: 규칙에 해당되는 패킷을 어떻게 처리할지를 정한다. 
+※ 내부에서 외부로 나갈 수 있도록 포트 열기
+
+# iptables -I OUTPUT 1 -p tcp --dport 9002 -j ACCEPT
+# iptables -I OUTPUT 1 -p udp --dport 9002 -j ACCEPT
+
+1.2 UDP PORT일 경우
+# iptables -I INPUT 1 -p udp --dport 12345 -j ACCEPT
+
+update
+sudo ufw allow 179
+
+
+
+--- openstack
+/etc/hosts
+115.68.198.131 paasta-controller
+
+vi /etc/network/interfaces
+dns-nameservers 8.8.8.8 8.8.4.4
+
+vi /etc/resolv.conf
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+
+
+
+--- calico
+curl https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml -O
+
+sed -i -e 's?192.168.0.0/16?192.168.10.0/24?g' calico.yaml
+
+kubectl apply -f calico.yaml
+
+
+$ sudo firewall-cmd --add-port=179/tcp --permanent
+$ sudo firewall-cmd --add-port=4789/udp --permanent
+$ sudo firewall-cmd --add-port=5473/tcp --permanent
+$ sudo firewall-cmd --add-port=443/tcp --permanent
+$ sudo firewall-cmd --add-port=6443/tcp --permanent
+$ sudo firewall-cmd --add-port=2379/tcp --permanent
+$ sudo firewall-cmd --reload
+
+sudo firewall-cmd --add-port=111/tcp --permanent
+sudo firewall-cmd --add-port=2049/tcp --permanent
+sudo firewall-cmd --add-port=2379-2380/tcp --permanent
+sudo firewall-cmd --add-port=6443/tcp --permanent
+sudo firewall-cmd --add-port=10250/tcp --permanent
+sudo firewall-cmd --add-port=10252/tcp --permanent
+sudo firewall-cmd --add-port=10255/tcp --permanent
+sudo firewall-cmd --add-port=4789/tcp --permanent
+sudo firewall-cmd --reload
+
+sudo firewall-cmd --add-port=111/tcp --permanent
+sudo firewall-cmd --add-port=2049/tcp --permanent
+sudo firewall-cmd --add-port=10250/tcp --permanent
+sudo firewall-cmd --add-port=10255/tcp --permanent
+sudo firewall-cmd --add-port=30000-32767/tcp --permanent
+sudo firewall-cmd --add-port=4789/udp --permanent
+sudo firewall-cmd --reload
+
+kubeadm reset
+
+kubeadm token create --print-join-command
+
+
+======================================================================================== kubespray (paasta-cp)
+issue
+TASK [download : download_file | Create dest directory on node] **********************************
+ok: [paasta-ta-bami-master]
+ok: [paasta-ta-bami-cluster-1]
+ok: [paasta-ta-bami-cluster-2]
+Wednesday 08 March 2023  01:38:12 +0000 (0:00:00.563)       0:08:48.337 ******* 
+Wednesday 08 March 2023  01:38:12 +0000 (0:00:00.065)       0:08:48.402 ******* 
+Wednesday 08 March 2023  01:38:12 +0000 (0:00:00.074)       0:08:48.477 ******* 
+FAILED - RETRYING: [paasta-ta-bami-master]: download_file | Validate mirrors (4 retries left).
+FAILED - RETRYING: [paasta-ta-bami-cluster-1]: download_file | Validate mirrors (4 retries left).
+FAILED - RETRYING: [paasta-ta-bami-cluster-2]: download_file | Validate mirrors (4 retries left).
+FAILED - RETRYING: [paasta-ta-bami-cluster-1]: download_file | Validate mirrors (3 retries left).
+FAILED - RETRYING: [paasta-ta-bami-master]: download_file | Validate mirrors (3 retries left).
+FAILED - RETRYING: [paasta-ta-bami-cluster-2]: download_file | Validate mirrors (3 retries left).
+FAILED - RETRYING: [paasta-ta-bami-cluster-1]: download_file | Validate mirrors (2 retries left).
+FAILED - RETRYING: [paasta-ta-bami-master]: download_file | Validate mirrors (2 retries left).
+FAILED - RETRYING: [paasta-ta-bami-cluster-2]: download_file | Validate mirrors (2 retries left).
+FAILED - RETRYING: [paasta-ta-bami-cluster-1]: download_file | Validate mirrors (1 retries left).
+FAILED - RETRYING: [paasta-ta-bami-master]: download_file | Validate mirrors (1 retries left).
+FAILED - RETRYING: [paasta-ta-bami-cluster-2]: download_file | Validate mirrors (1 retries left).
+failed: [paasta-ta-bami-cluster-1] (item=None) => {"attempts": 4, "censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result", "changed": false}
+failed: [paasta-ta-bami-master] (item=None) => {"attempts": 4, "censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result", "changed": false}
+failed: [paasta-ta-bami-cluster-2] (item=None) => {"attempts": 4, "censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result", "changed": false}
+
+>>>>>>>>>>>>>>>>>> download link error
+
+ASK [etcd : Get currently-deployed etcd version] ************************************************
+fatal: [paasta-ta-bami-master]: FAILED! => {"changed": false, "cmd": "/usr/local/bin/etcd --version", "msg": "[Errno 2] No such file or directory: b'/usr/local/bin/etcd'", "rc": 2, "stderr": "", "stderr_lines": [], "stdout": "", "stdout_lines": []}
+
+
+/home/ubuntu/paas-ta-container-platform-deployment/standalone/single_control_plane/roles/container-engine/crictl/tasks/crictl.yml for paasta-ta-bami-master, paasta-ta-bami-cluster-1, paasta-ta-bami-cluster-2 
+
+/home/ubuntu/paas-ta-container-platform-deployment/standalone/single_control_plane/roles/container-engine/crictl/tasks/../../../download/tasks/download_file.yml for paasta-ta-bami-master, paasta-ta-bami-cluster-1, paasta-ta-bami-cluster-2
+
+The connection to the server 127.0.0.1:6443 was refused - did you specify the right host or port?
+	>> iaas 통신 문제.
+
+pod/metrics-server-584974b8b6-rh9mv   0/1     Running   0   53m   10.233.102.195   paasta-ta-bami-master 
+	>> 
+	
+	$kubectl version --output=yaml
+	clientVersion:
+  buildDate: "2022-09-21T13:19:24Z"
+  compiler: gc
+  gitCommit: b39bf148cd654599a52e867485c02c4f9d28b312
+  gitTreeState: clean
+  gitVersion: v1.24.6
+  goVersion: go1.18.6
+  major: "1"
+  minor: "24"
+  platform: linux/amd64
+kustomizeVersion: v4.5.4
+serverVersion:
+  buildDate: "2022-09-21T13:12:04Z"
+  compiler: gc
+  gitCommit: b39bf148cd654599a52e867485c02c4f9d28b312
+  gitTreeState: clean
+  gitVersion: v1.24.6
+  goVersion: go1.18.6
+  major: "1"
+  minor: "24"
+  platform: linux/amd64
+
+
+  $kubectl describe pod/metrics-server-584974b8b6-rh9mv -n kube-system
+  Events:
+  Type     Reason     Age                  From     Message
+  ----     ------     ----                 ----     -------
+  Warning  Unhealthy  83s (x410 over 61m)  kubelet  Readiness probe failed: HTTP probe failed with statuscode: 500
+
+  $kubelet log
+
+  Error from server (ServiceUnavailable): the server is currently unable to handle the request (get nodes.metrics.k8s.io)
+
+  $kubectl logs pod/metrics-server-584974b8b6-rh9mv -n kube-system
+  Error from server: Get "https://10.170.70.131:10250/containerLogs/kube-system/metrics-server-584974b8b6-rh9mv/metrics-server": remote error: tls: internal error
+
+  $systemctl daemon-reload && systemctl restart kubelet && systemctl status kubelet
+  재시작
+
+  $systemctl status kubelet
+
+  $kubectl edit metirics-server-deployment.yml
+  		args:
+        - --cert-dir=/tmp
+        - --secure-port=4443
+        command:
+        - /metrics-server
+        - --kubelet-insecure-tls
+        - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+
+        args:
+        - --cert-dir=/tmp
+        - --secure-port=4443
+        - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+        - --kubelet-use-node-status-port
+        - --kubelet-insecure-tls
+        - --metric-resolution=30s
+
+      containers:
+      - name: metrics-server
+        image: k8s.gcr.io/metrics-server-amd64:v0.3.1
+        imagePullPolicy: Always
+        command:
+        - /metrics-server
+        - --logtostderr
+        - --kubelet-insecure-tls
+        - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+        args:
+        - --logtostderr
+        - --cert-dir=/tmp
+        - --secure-port=4443
+
+      $ kubectl edit deployment.apps/metrics-server -n kube-system
+      dnsPolicy: ClusterFirst
+      hostNetwork: true
+      nodeSelector:
+
+      $ vim /etc/kubernetes/manifests/kube-apiserver.yaml
+      .command
+      –enable-aggregator-routing=true
+
+      $kubectl get deploy,svc -n kube-system | egrep metrics-server
+      $kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes"
+
+
+masternode
+
+kubeadm init
+
+kubeadm reset
+
+sudo kubeadm init --apiserver-advertise-address 10.170.70.225 --pod-network-cidr=192.168.10.0/24
+
+netstat -nap
+
+/home/share/nfs 10.170.70.131(rw,no_root_squash,async)
+/home/share/nfs 10.170.70.33(rw,no_root_squash,async)
+/home/share/nfs 10.170.70.159(rw,no_root_squash,async)
+ 
+
+nfs 10.170.70.176 115.68.198.67 
+
+paasta-ta-bami-master			115.68.198.111
+paasta-ta-bami-nfs			115.68.198.67
+paasta-ta-bami-cluster-1	115.68.198.117
+paasta-ta-bami-cluster-2	115.68.198.74
+
+
+--------------------------------------------------------cp-cluster-vars.sh
+#!/bin/bash
+ 
+export MASTER_NODE_HOSTNAME=paasta-ta-bami-master
+export MASTER_NODE_PUBLIC_IP=115.68.198.111
+export MASTER_NODE_PRIVATE_IP=10.170.70.131
+
+## Worker Node Count Info
+export WORKER_NODE_CNT=2
+
+## Add Worker Node Info
+export WORKER1_NODE_HOSTNAME=paasta-ta-bami-cluster-1
+export WORKER1_NODE_PRIVATE_IP=10.170.70.33
+export WORKER2_NODE_HOSTNAME=paasta-ta-bami-cluster-2
+export WORKER2_NODE_PRIVATE_IP=10.170.70.159
+
+
+## Storage Type Info (eg. nfs, rook-ceph)
+export STORAGE_TYPE=nfs
+export NFS_SERVER_PRIVATE_IP=10.170.70.176
+~                                 
+---------------------------------------------------------------------------
+
+
+
+
+
+metric-server
+kubectl get pods -n kube-system | grep metrics-server
+kubectl edit deploy -n kube-system metrics-server
+kubectl get all -n kube-system -o wide
+kubectl logs pod/metrics-server-7fb89cdf69-csn8b -n kube-system
+kubectl describe deployment.apps/metrics-server -n kube-system
+kubectl describe pod/metrics-server-7fb89cdf69-csn8b -n kube-system
+ kubectl describe node paasta-ta-bami-master
+
+ etcd --listen-client-urls=http://$IP1:2379,http://$IP2:2379,http://$IP3:2379,http://$IP4:2379,http://$IP5:2379 --advertise-client-urls=http://$IP1:2379,http://$IP2:2379,http://$IP3:2379,http://$IP4:2379,http://$IP5:2379
+
+
+ kubectl taint nodes bamikube-cluster2 node-role.kubernetes.io/control-plane:NoSchedule-

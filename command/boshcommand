@@ -54,3 +54,43 @@
 
  	<파티션밀기>
  	 cat /dev/null > post-start.stderr.log
+ 
+
+
+ 14.smile server 
+
+ /etc/resolv.conf
+# This file is managed by man:systemd-resolved(8). Do not edit.
+#
+# This is a dynamic resolv.conf file for connecting local clients to the
+# internal DNS stub resolver of systemd-resolved. This file lists all
+# configured search domains.
+#
+# Run "systemd-resolve --status" to see details about the uplink DNS servers
+# currently in use.
+#
+# Third party programs must not access this file directly, but only through the
+# symlink at /etc/resolv.conf. To manage man:resolv.conf(5) in a different way,
+# replace this symlink by a static file or a different symlink.
+#
+# See man:systemd-resolved.service(8) for details about the supported modes of
+# operation for /etc/resolv.conf.
+
+nameserver 127.0.0.53
+options edns0
+search openstacklocal
+
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+
+
+15. se nu
+	yml 파일 들여쓰기 보는 방법
+
+
+16. smile server apt-get install 오류
+vi /etc/network/interfaces 를 열고
+		dns-nameservers 8.8.8.8 8.8.4.4 를 추가.
+vi /etc/resolv.conf 를 열고
+		nameserver 8.8.8.8
+		nameserver 8.8.4.4 
