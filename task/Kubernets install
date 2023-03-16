@@ -496,7 +496,7 @@ nfs 10.170.70.176 115.68.198.67
 
 paasta-ta-bami-master			115.68.198.111
 paasta-ta-bami-nfs			115.68.198.67
-paasta-ta-bami-cluster-1	115.68.198.117
+paasta-ta-bami-cluster	    115.68.198.117
 paasta-ta-bami-cluster-2	115.68.198.74
 
 
@@ -512,7 +512,7 @@ export WORKER_NODE_CNT=2
 
 ## Add Worker Node Info
 export WORKER1_NODE_HOSTNAME=paasta-ta-bami-cluster-1
-export WORKER1_NODE_PRIVATE_IP=10.170.70.33
+export WORKER1_NODE_PRIVATE_IP=10.170.70.201
 export WORKER2_NODE_HOSTNAME=paasta-ta-bami-cluster-2
 export WORKER2_NODE_PRIVATE_IP=10.170.70.159
 
