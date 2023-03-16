@@ -505,7 +505,7 @@ paasta-ta-bami-cluster-2	115.68.198.74
  
 export MASTER_NODE_HOSTNAME=paasta-ta-bami-master
 export MASTER_NODE_PUBLIC_IP=115.68.198.111
-export MASTER_NODE_PRIVATE_IP=10.170.70.131
+export MASTER_NODE_PRIVATE_IP=10.170.70.235
 
 ## Worker Node Count Info
 export WORKER_NODE_CNT=2
