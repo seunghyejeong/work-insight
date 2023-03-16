@@ -1,5 +1,13 @@
 install mysql 
 
+user생성
+
+show databases;
+use mysql
+select host, user, password from user;
+update user set password=1234 where user='root';
+
+
 
 window
 
@@ -55,4 +63,123 @@ Get-Content JEONBAMI-bin.000001.sql | mysql.exe  -u root -p  1234
 cmd /c 'mysql.exe  -u my_service -p  my_service < mysql-dump.sql'
 
 걍 안됨 재설치 하는게 속편함
-'
+
+
+===================================================== command
+
+MariaDB 또한 Server와 Client로 구성되어 있다. 
+select host, user, password from user;
+show grants for 'root'@'localhost';
+
+
+update user set password=password('1234') where user='bami';
+set password for 'user'@'%' = password('1234');
+set password for 'bami'@'%' = password('tmdgP0425!');
+
+sudo systemctl stop mysql
+
+sudo mysqld_safe --skip-grant-tables &
+
+mysql -u root
+
+
+revoke all on db_name.table_name FROM 'root'@'localhost';
+drop user 'root'@'localhost';
+
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'tmdgP0425!';
+	안되면 UPDATE mysql.user SET authentication_string = PASSWORD('tmdgP0425!') WHERE User = 'root' AND Host = 'localhost';
+
+ FLUSH PRIVILEGES;
+===================================================== 삭제 및 재설치
+
+sudo apt-get purge mariadb-server
+sudo apt autoremove
+sudo apt-get purge mysql-common
+sudo rm -rf /var/log/mysql
+sudo rm -rf /var/log/mysql.*
+sudo rm -rf /var/lig/mysql
+sudo rm -rf /var/etc/mysql
+sudo ln -sf /usr/share/zoneinfo/Asia/Seoul/etc/localtime  //타임존 설정파일 대체
+sudo timedatectl set-timezone 'Asia/Seoul' //명령어로 설정
+
+dpkg -l | grep mysql
+ sudo apt-get remove --purge {list}
+
+
+sudo apt-get remove --purge mariadb*
+재설치
+-- server설치
+apt update
+apt install mariadb-server
+
+
+	"E: Could not open lock file /var/lib/dpkg/lock-frontend - open (13: Permission denied)
+	E: Unable to acquire the dpkg frontend lock (/var/lib/dpkg/lock-frontend), are you root?
+	" 
+	 sudo rm /var/lib/apt/lists/lock
+	 sudo rm /var/cache/apt/archives/lock
+	 sudo rm /var/lib/dpkg/lock*
+
+-- client 설치 
+
+sudo apt-get install mariadb-client
+sudo mysql_secure_installation
+
+--- 외부 접속 허용
+vim /etc/mysql/mariadb.conf.d/50-server.cnf
+bind-address 주석처리
+sudo systemctl stop mariadb
+sudo systemctl start mariadb
+
+---
+issue1
+ mariadb.service - MariaDB 10.3.38 database server
+     Loaded: loaded (/lib/systemd/system/mariadb.service; enabled; vendor preset: enabled)
+     Active: failed (Result: exit-code) since Thu 2023-03-16 11:06:25 KST; 45s ago
+       Docs: man:mysqld(8)
+             https://mariadb.com/kb/en/library/systemd/
+    Process: 180282 ExecStartPre=/usr/bin/install -m 755 -o mysql -g root -d /var/run/mysqld (code=exited, status=0/SUCCESS)
+    Process: 180290 ExecStartPre=/bin/sh -c systemctl unset-environment _WSREP_START_POSITION (code=exited, status=0/SUCCESS)
+    Process: 180304 ExecStartPre=/bin/sh -c [ ! -e /usr/bin/galera_recovery ] && VAR= ||   VAR=`cd /usr/bin/..; /usr/bin/galera_recovery`; [ $? -eq 0 ]   && systemctl set-envi>
+    Process: 180312 ExecStart=/usr/sbin/mysqld $MYSQLD_OPTS $_WSREP_NEW_CLUSTER $_WSREP_START_POSITION (code=exited, status=0/SUCCESS)
+    Process: 180343 ExecStartPost=/bin/sh -c systemctl unset-environment _WSREP_START_POSITION (code=exited, status=0/SUCCESS)
+    Process: 180345 ExecStartPost=/etc/mysql/debian-start (code=exited, status=203/EXEC)
+   Main PID: 180312 (code=exited, status=0/SUCCESS)
+     Status: "MariaDB server is down"
+
+
+ls /etc/mysql/debian-start :: 존재하지 않았음
+
+sudo apt-get remove --purge mariadb* 재설치 
+sudo apt-get install mariadb-server
+
+ls /etc/mysql/debian-start 존재함
+sudo chmod +x /etc/mysql/debian-start
+sudo systemctl restart mariadb.service
+systemctl status mariadb.service
+
+ mariadb.service - MariaDB 10.3.38 database server
+     Loaded: loaded (/lib/systemd/system/mariadb.service; enabled; vendor preset: enabled)
+     Active: active (running) since Thu 2023-03-16 11:09:47 KST; 1min 26s ago
+       Docs: man:mysqld(8)
+             https://mariadb.com/kb/en/library/systemd/
+    Process: 187008 ExecStartPre=/usr/bin/install -m 755 -o mysql -g root -d /var/run/mysqld (code=exited, status=0/SUCCESS)
+    Process: 187009 ExecStartPre=/bin/sh -c systemctl unset-environment _WSREP_START_POSITION (code=exited, status=0/SUCCESS)
+    Process: 187011 ExecStartPre=/bin/sh -c [ ! -e /usr/bin/galera_recovery ] && VAR= ||   VAR=`cd /usr/bin/..; /usr/bin/galera_recovery`; [ $? -eq 0 ]   && systemctl set-envi>
+    Process: 187156 ExecStartPost=/bin/sh -c systemctl unset-environment _WSREP_START_POSITION (code=exited, status=0/SUCCESS)
+    Process: 187163 ExecStartPost=/etc/mysql/debian-start (code=exited, status=0/SUCCESS)
+   Main PID: 187058 (mysqld)
+     Status: "Taking your SQL requests now..."
+      Tasks: 31 (limit: 9507)
+     Memory: 65.1M
+     CGroup: /system.slice/mariadb.service
+             └─187058 /usr/sbin/mysqld
+
+
+---
+
+sudo mariadb -u root -p
+CREATE USER 'bami'@'localhost' IDENTIFIED BY 'tmdgP0425!';
+GRANT ALL PRIVILEGES ON *.* TO 'bami'@'localhost' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+mysql -u newuser -p

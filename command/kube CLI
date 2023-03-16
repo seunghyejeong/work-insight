@@ -165,3 +165,14 @@ kubectl apply -f 어쩌구 -n bami
 
 
 
+51. k약어
+
+
+source <(kubectl completion bash)
+echo "source <(kubectl completion bash)"
+alias k=kubectl
+complete -o default -F __start_kubectl k
+
+
+echo "alias ll='ls --color=auto -alF'" >> ~/.bashrc
+source ~/.bashrc

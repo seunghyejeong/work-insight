@@ -435,4 +435,67 @@ k8s : mariadb Config
 		mariadb의 백업 log를 시간순으로 정렬 / 그룹으로 맵핑 (CronJob) -> 주기적으로 backup하는 script
 - Remote Client Access : mariadb.((system_domain)) -> nodePort"
 		NodePort로 외부 접속 가능하게
-		
+
+
+mariadb
+
+init.sql
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-initdb-config
+data:
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS mydata;
+    USE mydata;
+    CREATE TABLE friends (id INT, name VARCHAR(256), age INT, gender VARCHAR(3));
+    INSERT INTO friends VALUES (1, 'Abhijeet', 32, 'm');
+    INSERT INTO friends VALUES (2, 'Anjali', 29, 'f');
+    INSERT INTO friends VALUES (3, 'Aayush', 27, 'm');
+pvc 
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-pv-claim # pvc 이름
+spec:
+  storageClassName: mariadb-storage-class
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+
+
+cronJob
+https://kubernetes.io/ko/docs/tasks/job/automated-tasks-with-cron-jobs/
+
+
+
+#230309
+kubespray 환경구축하기
+
+#020310
+
+nfs volume 생성 및 mount
+pod deploy(test-pod)
+configmap: 진행중
+
+
+
+#230313
+
+configmap
+deployment
+service
+
+작성
+
+#230314
+
+호환성 검증 시나리오 작성 :: 수정사항이 있어 일시 중단
+
+mariadb 업로드 
+
+
+#230315
+검증결과서 작성 및 업로드

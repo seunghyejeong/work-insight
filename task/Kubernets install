@@ -1,68 +1,7 @@
- Kubernets install
-
-install tool
-	kubeadm
-	kubespary
-
-CNI(Container Network Interface)
-	Container간 통신을 지원하는 VxLAN. Pod Network라고도 부름
+Kubernets install
 
 
-1. master 1개 node 2개 생성
-	master bamikube-master
-	node1  bamikube-node1
-	node2  paasta-ta-bami
-
-2. all inception에  docker 설치
-	https://docs.docker.com/desktop/install/linux-install/
-	
-sudo apt-get update
- 	
-sudo apt-get install -y \
-ca-certificates \
-curl \
-gnupg \
-lsb-release
-
-sudo mkdir -m 0755 -p /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-
-echo \
-"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-apt-get update
-
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-
-systemctl enable docker
-systemctl start docker
-systemctl start docker
-
-sudo docker run hello-world
-
-
-3. kubernetes install 
-	1) 환경 설정
-
-swapoff -a && sed -i '/swap/s/^/#/' /etc/fstab
-nc 127.0.0.1 6443
-	2) kubeadm, kubectl, kubelet 설치
-
-		apt-get update
-		apt-get install -y apt-transport-https ca-certificates curl
-		curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
-		echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
-		apt-get update
-		 apt-get install -y kubelet kubeadm kubectl
-		 apt-mark hold kubelet kubeadm kubectl
-	3) control-plane 구성
-	4) worker node구성
-	5) 설치 확인 
-
-
-=======================================================================================[minikube]
+==========================================================================================================[minikube]
 
 이전에 Docker kuberctl 설치하기
 
@@ -112,9 +51,81 @@ gcr.io/k8s-minikube/kicbase   v0.0.37   01c0ce65fff7   4 weeks ago   1.15GB
 http://192.168.49.2:32473
 
 
+========================================================================================================[k8s 환경구성]
+
+install tool
+	kubeadm
+	kubespary
+
+CNI(Container Network Interface)
+	Container간 통신을 지원하는 VxLAN. Pod Network라고도 부름
 
 
-====================================================================================== [kubeadm]
+1. master 1개 node 2개 생성
+	master bamikube-master
+	node1  bamikube-node1
+	node2  paasta-ta-bami
+
+all inception에  ================================================================================== [docker install] 
+	
+https://docs.docker.com/desktop/install/linux-install/
+	
+sudo apt-get update
+ 	
+sudo apt-get install -y \
+ca-certificates \
+curl \
+gnupg \
+lsb-release
+
+sudo mkdir -m 0755 -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+echo \
+"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+apt-get update
+
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+
+systemctl enable docker
+systemctl start docker
+systemctl start docker
+
+sudo docker run hello-world
+
+
+================================================================================================[kubernetes install]
+
+1) 환경 설정
+
+swapoff -a && sed -i '/swap/s/^/#/' /etc/fstab
+nc 127.0.0.1 6443
+	
+2) kubeadm, kubectl, kubelet 설치
+
+apt-get update
+
+apt-get install -y apt-transport-https ca-certificates curl
+
+curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+apt-get update
+
+apt-get install -y kubelet kubeadm kubectl
+
+apt-mark hold kubelet kubeadm kubectl
+
+3) control-plane 구성
+4) worker node구성
+5) 설치 확인 
+
+
+================================================================================[kubeadm]
 
 
 #Master, Worker
@@ -243,12 +254,10 @@ $ sudo kubeadm init --apiserver-advertise-address 10.100.11.209 --pod-network-ci
 
 
 
-
 #Master
 $ mkdir -p $HOME/.kube
 $ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 $ sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
 
 
 
@@ -373,18 +382,14 @@ ASK [etcd : Get currently-deployed etcd version] *******************************
 fatal: [paasta-ta-bami-master]: FAILED! => {"changed": false, "cmd": "/usr/local/bin/etcd --version", "msg": "[Errno 2] No such file or directory: b'/usr/local/bin/etcd'", "rc": 2, "stderr": "", "stderr_lines": [], "stdout": "", "stdout_lines": []}
 
 
-/home/ubuntu/paas-ta-container-platform-deployment/standalone/single_control_plane/roles/container-engine/crictl/tasks/crictl.yml for paasta-ta-bami-master, paasta-ta-bami-cluster-1, paasta-ta-bami-cluster-2 
-
-/home/ubuntu/paas-ta-container-platform-deployment/standalone/single_control_plane/roles/container-engine/crictl/tasks/../../../download/tasks/download_file.yml for paasta-ta-bami-master, paasta-ta-bami-cluster-1, paasta-ta-bami-cluster-2
-
 The connection to the server 127.0.0.1:6443 was refused - did you specify the right host or port?
 	>> iaas 통신 문제.
 
 pod/metrics-server-584974b8b6-rh9mv   0/1     Running   0   53m   10.233.102.195   paasta-ta-bami-master 
 	>> 
 	
-	$kubectl version --output=yaml
-	clientVersion:
+$kubectl version --output=yaml
+  clientVersion:
   buildDate: "2022-09-21T13:19:24Z"
   compiler: gc
   gitCommit: b39bf148cd654599a52e867485c02c4f9d28b312
@@ -394,8 +399,8 @@ pod/metrics-server-584974b8b6-rh9mv   0/1     Running   0   53m   10.233.102.195
   major: "1"
   minor: "24"
   platform: linux/amd64
-kustomizeVersion: v4.5.4
-serverVersion:
+  kustomizeVersion: v4.5.4
+  serverVersion:
   buildDate: "2022-09-21T13:12:04Z"
   compiler: gc
   gitCommit: b39bf148cd654599a52e867485c02c4f9d28b312
@@ -407,25 +412,25 @@ serverVersion:
   platform: linux/amd64
 
 
-  $kubectl describe pod/metrics-server-584974b8b6-rh9mv -n kube-system
+ $kubectl describe pod/metrics-server-584974b8b6-rh9mv -n kube-system
   Events:
   Type     Reason     Age                  From     Message
   ----     ------     ----                 ----     -------
   Warning  Unhealthy  83s (x410 over 61m)  kubelet  Readiness probe failed: HTTP probe failed with statuscode: 500
 
-  $kubelet log
+$kubelet log
 
   Error from server (ServiceUnavailable): the server is currently unable to handle the request (get nodes.metrics.k8s.io)
 
-  $kubectl logs pod/metrics-server-584974b8b6-rh9mv -n kube-system
+$kubectl logs pod/metrics-server-584974b8b6-rh9mv -n kube-system
   Error from server: Get "https://10.170.70.131:10250/containerLogs/kube-system/metrics-server-584974b8b6-rh9mv/metrics-server": remote error: tls: internal error
 
-  $systemctl daemon-reload && systemctl restart kubelet && systemctl status kubelet
+$systemctl daemon-reload && systemctl restart kubelet && systemctl status kubelet
   재시작
 
-  $systemctl status kubelet
+$systemctl status kubelet
 
-  $kubectl edit metirics-server-deployment.yml
+$kubectl edit metirics-server-deployment.yml
   		args:
         - --cert-dir=/tmp
         - --secure-port=4443
@@ -456,12 +461,12 @@ serverVersion:
         - --cert-dir=/tmp
         - --secure-port=4443
 
-      $ kubectl edit deployment.apps/metrics-server -n kube-system
+$ kubectl edit deployment.apps/metrics-server -n kube-system
       dnsPolicy: ClusterFirst
       hostNetwork: true
       nodeSelector:
 
-      $ vim /etc/kubernetes/manifests/kube-apiserver.yaml
+$ vim /etc/kubernetes/manifests/kube-apiserver.yaml
       .command
       –enable-aggregator-routing=true
 
@@ -479,10 +484,13 @@ sudo kubeadm init --apiserver-advertise-address 10.170.70.225 --pod-network-cidr
 
 netstat -nap
 
+--------------------------------------------------------------------/etc/exports
+
 /home/share/nfs 10.170.70.131(rw,no_root_squash,async)
 /home/share/nfs 10.170.70.33(rw,no_root_squash,async)
 /home/share/nfs 10.170.70.159(rw,no_root_squash,async)
  
+--------------------------------------------------------------------
 
 nfs 10.170.70.176 115.68.198.67 
 
@@ -492,7 +500,7 @@ paasta-ta-bami-cluster-1	115.68.198.117
 paasta-ta-bami-cluster-2	115.68.198.74
 
 
---------------------------------------------------------cp-cluster-vars.sh
+-----------------------------------------------------------------cp-cluster-vars.sh
 #!/bin/bash
  
 export MASTER_NODE_HOSTNAME=paasta-ta-bami-master
@@ -519,7 +527,7 @@ export NFS_SERVER_PRIVATE_IP=10.170.70.176
 
 
 
-metric-server
+--------------------------------------------------------------[metric-server]
 kubectl get pods -n kube-system | grep metrics-server
 kubectl edit deploy -n kube-system metrics-server
 kubectl get all -n kube-system -o wide
@@ -532,3 +540,311 @@ kubectl describe pod/metrics-server-7fb89cdf69-csn8b -n kube-system
 
 
  kubectl taint nodes bamikube-cluster2 node-role.kubernetes.io/control-plane:NoSchedule-
+
+
+
+
+
+source <(kubectl completion bash)
+echo "source <(kubectl completion bash)"
+alias k=kubectl
+complete -o default -F __start_kubectl k
+
+
+----------------------------------------------------------------- [nfs server] 
+
+
+[master, cluster-1,cluster-2]
+mkdir ./share/nfs-master
+mkdir -p share/nfs-1
+mkdir -p share/nfs-2
+
+
+[nfs VM]
+exportfs -v	:	볼륨 확인
+showmount -e ${nfs-serverIP}	:	서버 공유가능한 정보 확인
+rpcinfo -p [NFS_Server_IP]	:	마운트 준비
+
+mount -t nfs 10.170.70.176:/home/share/nfs /home/share/nfs-1
+mount -t nfs 10.170.70.176:/home/share/nfs /home/share/nfs-2
+mount -t nfs 10.170.70.176:/home/share/nfs /home/share/nfs-master	:	마운트 연결
+df -h 	:	filesystem info
+
+[git clone]
+git clone https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner
+
+[set authorization] 구성설치
+k apply -f rbac.yaml 
+
+[provisioner install]
+k apply -f deployment.yaml
+
+[update storageClass]
+k apply -f class.yaml
+
+k get pod
+result: nfs-client-provisioner-6c9ffc85c-wcgg6   1/1     Running   0             48m
+
+k get pvc
+NAME          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+mariadb-pvc   Bound    pvc-1c9c4e8d-317d-4c35-8d39-61ed6e28d401   1Mi        RWX            nfs-client     88m
+
+k get sc
+result: 
+NAME                               PROVISIONER                                   RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+nfs-client                         k8s-sigs.io/nfs-subdir-external-provisioner   Delete          Immediate           false                  102m
+paasta-cp-storageclass (default)   paasta-cp-nfs-provisioner                     Delete          Immediate           false                  24h
+
+
+[처음에 bound가 안되었음]
+
+NAME          STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+mariadb-pvc   Pending                                      nfs-client     31m
+
+$k describe pvc mariadb-pvc -n default
+
+Name:          mariadb-pvc
+Namespace:     default
+StorageClass:  nfs-client
+Status:        Pending
+Volume:        
+Labels:        <none>
+Annotations:   volume.beta.kubernetes.io/storage-provisioner: k8s-sigs.io/nfs-subdir-external-provisioner
+               volume.kubernetes.io/storage-provisioner: k8s-sigs.io/nfs-subdir-external-provisioner
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      
+Access Modes:  
+VolumeMode:    Filesystem
+Used By:       <none>
+Events:
+  Type    Reason                Age                    From                         Message
+  ----    ------                ----                   ----                         -------
+  Normal  ExternalProvisioning  2m32s (x122 over 32m)  persistentvolume-controller  waiting for a volume to be created, either by external provisioner "k8s-sigs.io/nfs-subdir-external-provisioner" or manually created by system administrator
+> 시간 지나고 저절로 바운딩 됨.
+
+
+[test1]
+
+apiVersion: v1
+kind: Pod
+spec:
+  volumes:
+  - name: nfs-pvc
+    persistentVolumeClaim:
+      claimName: mariadb-pvc
+  containers:
+    - name: nfs-pvc-test
+      image: nginx:alpine
+      ports:
+      - containerPort: 80
+
+      volumeMounts:
+        - name: nfs-pvc
+          mountPath: /tmp
+[test2]
+
+kind: Pod
+apiVersion: v1
+metadata:
+  name: mariadb-pod-test
+spec:
+  containers:
+  - name: mariadb-pod-test
+    image: busybox:stable
+    command:
+      - "/bin/sh"
+    args:
+      - "-c"
+      - "touch /mnt/SUCCESS && exit 0 || exit 1"
+    volumeMounts:
+      - name: nfs-pvc
+        mountPath: "/mnt"
+  restartPolicy: "Never"
+  volumes:
+    - name: nfs-pvc
+      persistentVolumeClaim:
+        claimName: mariadb-pvc
+
+
+k get pods
+NAME                                     READY   STATUS      RESTARTS      AGE
+mariadb-pod-test                         0/1     Completed   0             22m
+nfs-client-provisioner-6c9ffc85c-wcgg6   1/1     Running     0             164m
+nfs-pod-provisioner-8cf58bb66-b7qg4      1/1     Running     4 (26h ago)   26h
+test-pod                                 1/1     Running     0             5m35s
+
+
+[test1]
+kubectl exec -it test-pod -- sh
+/ # cd /tmp/
+/tmp # echo "this is a test" > test.txt
+/tmp # cat test.txt
+this is a test
+/tmp # exit
+
+[생성 확인]
+cd /home/share/nfs-master/
+
+- 루트가 어디인지 몰라 헤맸는데 처음 마운트 할 때 공유 한 폴더에 있음
+mount -t nfs 10.170.70.176:/home/share/nfs /home/share/nfs-master 로 mount했음
+그래서 각 공유 폴더로 이동하면 파일 생성 및 테스트가 완료됨
+
+
+--------------------------------------------------------------[configMap]
+
+[configmap 생성 후 pod에게 전달 방법]
+1. 환경변수 
+2. args
+3. volume mount
+
+
+$ kubectl create configmap CONFIG_NAME --from-file={SOURCE} 	
+	:	파일 key=filename/ value=filecontent
+$ kubectl create configmap CONFIG_NAME --from-literal={KEY1}={VALUE1}	
+	:	key-value 형태
+$ kubectl create configmap CONFIG_NAME --from-file=NAME=FILENAME	
+	:	key=NAME/value=FILENAME
+$ kubectl create configmap CONFIG_NAME --from-file=/configmap.dir/	
+	:	dir 내에 있는 file(갯수제한없음) 모두가 key
+		file content는 value가됨.
+
+
+----------------------------------------------------------[service/deployment/작성]
+
+
+
+kubectl exec -it pod/mariadb-69d9f74d79-rrmg7 -- bash
+
+
+2023-03-14 06:35:46+00:00 [Note] [Entrypoint]: Entrypoint script for MariaDB Server 1:10.7.8+maria~ubu2004 started.
+2023-03-14 06:35:46+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
+2023-03-14 06:35:46+00:00 [Note] [Entrypoint]: Entrypoint script for MariaDB Server 1:10.7.8+maria~ubu2004 started.
+2023-03-14 06:35:46+00:00 [ERROR] [Entrypoint]: Database is uninitialized and password option is not specified
+	You need to specify one of MARIADB_ROOT_PASSWORD, MARIADB_ROOT_PASSWORD_HASH, MARIADB_ALLOW_EMPTY_ROOT_PASSWORD and MARIADB_RANDOM_ROOT_PASSWORD
+
+      env:
+          - name: MARIADB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mariadb-secret
+                key: password
+
+
+
+
+
+------------------------------------------------------------------------------------[mariadb]--
+
+select host, user, password from user;
+
+update user set password=password('1234') where user='bami';
+
+set password for 'user'@'%' = password('1234');
+
+set password for 'bami'@'%' = password('tmdgP0425!');
+
+
+
+sudo systemctl stop mysql
+
+sudo mysqld_safe --skip-grant-tables &
+
+mysql -u root
+
+
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'tmdgP0425!';
+	안되면 UPDATE mysql.user SET authentication_string = PASSWORD('tmdgP0425!') WHERE User = 'root' AND Host = 'localhost';
+
+ FLUSH PRIVILEGES;
+
+mysqladmin -u root -p shutdown
+
+
+sudo /etc/init.d/mysql start
+
+
+sudo systemctl start 
+sudo systemctl start mariadb
+
+systemctl status mariadb.service
+-------------------------------------------------------------------------------------------------
+select host, user, password from user;
+
+update user set password=password('1234') where user='bami';
+
+set password for 'user'@'%' = password('1234');
+
+set password for 'bami'@'%' = password('tmdgP0425!');
+
+
+
+sudo systemctl stop mysql
+
+sudo mysqld_safe --skip-grant-tables &
+
+mysql -u root
+
+
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'tmdgP0425!';
+	안되면 UPDATE mysql.user SET authentication_string = PASSWORD('tmdgP0425!') WHERE User = 'root' AND Host = 'localhost';
+
+ FLUSH PRIVILEGES;
+
+mysqladmin -u root -p shutdown
+
+
+sudo /etc/init.d/mysql start
+
+
+sudo systemctl start 
+sudo systemctl start mariadb
+
+systemctl status mariadb.service
+sudo apt-get purge mariadb-server
+sudo apt autoremove
+sudo apt-get purge mysql-common
+sudo ln -sf /usr/share/zoneinfo/Asia/Seoul/etc/localtime  //타임존 설정파일 대체
+sudo timedatectl set-timezone 'Asia/Seoul' //명령어로 설정
+sudo apt-get install -y mariadb-server
+
+data:
+  init.sql: |
+    CREATE USER 'psta_common'@'%' IDENTIFIED BY 'paastaadmin';
+    GRANT all privileges on *.* to psta_common@localhost identified by 'paastaadmin';
+    FLUSH PRIVILEGES;
+    CREATE DATABASE IF NOT EXISTS `pstadb_common` DEFAULT CHARACTER SET utf8;
+    USE pstadb_common;
+    CREATE TABLE pop_up (no INT(11) NOT NULL, title VARCHAR(255) NOT NULL, file_no INT(11), link_url VARCHAR(255) NOT NULL);
+    INSERT INTO pop_up (no, title, file_no, link_url) values (1, 'test', 123, 'test_url');
+
+
+kubectl -n kube-system delete pods --grace-period=0 --force coredns-74d6c5659f-xljmf
+
+kubectl get apiservice | grep metrics
+False (MissingEndpoints)
+
+kubectl get svc metrics-server -n kube-system
+curl -k 10.233.37.193
+curl: (7) Failed to connect to 10.233.37.193 port 80: Connection refused
+---------------------------------------------------------------------------------------------------
+
+issue
+
+pod/coredns-74d6c5659f-6brz7                        0/1     Pending            0                 20h    <none>           <none>                     <none>           <none>
+pod/coredns-74d6c5659f-wdsxc                        0/1     Running            1                 7d1h   10.233.102.227   paasta-ta-bami-master      <none>           <none>
+pod/metrics-server-584974b8b6-k56xm                 0/1     CrashLoopBackOff   683 (4m10s ago)   7d1h   10.233.102.243   paasta-ta-bami-master      <none>           <none>
+
+daemonset.apps/kube-proxy     3         3         1       3            1           kubernetes.io/os=linux   7d1h   kube-proxy    registry.k8s.io/kube-proxy:v1.24.6              k8s-app=kube-proxy
+
+deployment.apps/coredns          0/2     2            0           7d1h   coredns          registry.k8s.io/coredns/coredns:v1.8.6                            k8s-app=kube-dns
+deployment.apps/dns-autoscaler   1/1     1            1           7d1h   autoscaler       registry.k8s.io/cpa/cluster-proportional-autoscaler-amd64:1.8.5   k8s-app=dns-autoscaler
+deployment.apps/metrics-server   0/1     1            0           7d1h   metrics-server   registry.k8s.io/metrics-server/metrics-server:v0.6.1              app.kubernetes.io/name=metrics-server,version=v0.6.1
+
+
+NAME                       STATUS     ROLES           AGE    VERSION   INTERNAL-IP     EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
+paasta-ta-bami-cluster-1   NotReady   <none>          7d1h   v1.24.6   10.170.70.33    <none>        Ubuntu 20.04.4 LTS   5.4.0-107-generic   cri-o://1.24.4
+paasta-ta-bami-cluster-2   NotReady   <none>          7d1h   v1.24.6   10.170.70.159   <none>        Ubuntu 20.04.4 LTS   5.4.0-107-generic   cri-o://1.24.4
+paasta-ta-bami-master      Ready      control-plane   7d1h   v1.24.6   10.170.70.131   <none>        Ubuntu 20.04.6 LTS   5.4.0-144-generic   cri-o://1.24.4
+
+
+
