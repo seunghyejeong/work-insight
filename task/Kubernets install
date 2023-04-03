@@ -82,7 +82,7 @@ sudo mkdir -m 0755 -p /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 
 echo \
-"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+"deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
 $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 apt-get update
@@ -95,8 +95,11 @@ systemctl start docker
 systemctl start docker
 
 sudo docker run hello-world
-
-
+$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+$ sudo apt-get update
+$ sudo apt-get install docker-ce
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 ================================================================================================[kubernetes install]
 
 1) 환경 설정
@@ -296,7 +299,7 @@ netstat -nap
 
 update
 sudo ufw allow 179
-
+sudo ufw allow 3306/tcp
 
 
 --- openstack
@@ -328,15 +331,16 @@ $ sudo firewall-cmd --add-port=6443/tcp --permanent
 $ sudo firewall-cmd --add-port=2379/tcp --permanent
 $ sudo firewall-cmd --reload
 
-sudo firewall-cmd --add-port=111/tcp --permanent
-sudo firewall-cmd --add-port=2049/tcp --permanent
-sudo firewall-cmd --add-port=2379-2380/tcp --permanent
-sudo firewall-cmd --add-port=6443/tcp --permanent
-sudo firewall-cmd --add-port=10250/tcp --permanent
-sudo firewall-cmd --add-port=10252/tcp --permanent
-sudo firewall-cmd --add-port=10255/tcp --permanent
-sudo firewall-cmd --add-port=4789/tcp --permanent
-sudo firewall-cmd --reload
+sudo firewall-cmd --add-port=111/tcp --permanent --zone docker
+sudo firewall-cmd --add-port=2049/tcp --permanent --zone docker
+sudo firewall-cmd --add-port=2379-2380/tcp --permanent --zone docker
+sudo firewall-cmd --add-port=6443/tcp --permanent --zone docker
+sudo firewall-cmd --add-port=10250/tcp --permanent --zone docker
+sudo firewall-cmd --add-port=10252/tcp --permanent --zone docker
+sudo firewall-cmd --add-port=10255/tcp --permanent --zone docker
+sudo firewall-cmd --add-port=4789/tcp --permanent --zone docker
+
+
 
 sudo firewall-cmd --add-port=111/tcp --permanent
 sudo firewall-cmd --add-port=2049/tcp --permanent
@@ -486,40 +490,73 @@ netstat -nap
 
 --------------------------------------------------------------------/etc/exports
 
-/home/share/nfs 10.170.70.131(rw,no_root_squash,async)
-/home/share/nfs 10.170.70.33(rw,no_root_squash,async)
-/home/share/nfs 10.170.70.159(rw,no_root_squash,async)
+/home/share/nfs 10.170.70.215(rw,no_root_squash,async)
+/home/share/nfs 10.170.70.201(rw,no_root_squash,async)
+/home/share/nfs 10.170.70.246(rw,no_root_squash,async)
  
 --------------------------------------------------------------------
 
 nfs 10.170.70.176 115.68.198.67 
 
-paasta-ta-bami-master			115.68.198.111
+paasta-ta-bami-master		115.68.198.111
 paasta-ta-bami-nfs			115.68.198.67
 paasta-ta-bami-cluster	    115.68.198.117
-paasta-ta-bami-cluster-2	115.68.198.74
+paasta-ta-bami-cluster2	    115.68.198.74
 
+
+
+[이 세영 전임님] [4:42 PM] vsphere 
+10.77.1.0/16
+
+cre-master1 :: 10.77.1.22
+cre-worker01 :: 10.77.1.24
+cre-worker01v :: 10.77.1.23
+ta-cre-for-ba-nfs 10.77.1.25
+ubuntu/paastata
+ubuntu/paastata
+
+-----------------------------------------------------------------cp-cluster-vars.sh
+#!/bin/bash
+ 
+export MASTER_NODE_HOSTNAME=paasta-ta-bami-master
+export MASTER_NODE_PUBLIC_IP=61.252.53.231
+export MASTER_NODE_PRIVATE_IP=10.77.1.22
+
+## Worker Node Count Info
+export WORKER_NODE_CNT=2
+
+## Add Worker Node Info
+export WORKER1_NODE_HOSTNAME=worker01
+export WORKER1_NODE_PRIVATE_IP=10.77.1.24
+export WORKER2_NODE_HOSTNAME=worker01v
+export WORKER2_NODE_PRIVATE_IP=10.77.1.23
+
+
+## Storage Type Info (eg. nfs, rook-ceph)
+export STORAGE_TYPE=nfs
+export NFS_SERVER_PRIVATE_IP=10.77.1.25
+~                                 
 
 -----------------------------------------------------------------cp-cluster-vars.sh
 #!/bin/bash
  
 export MASTER_NODE_HOSTNAME=paasta-ta-bami-master
 export MASTER_NODE_PUBLIC_IP=115.68.198.111
-export MASTER_NODE_PRIVATE_IP=10.170.70.235
+export MASTER_NODE_PRIVATE_IP=10.170.70.215
 
 ## Worker Node Count Info
 export WORKER_NODE_CNT=2
 
 ## Add Worker Node Info
-export WORKER1_NODE_HOSTNAME=paasta-ta-bami-cluster-1
+export WORKER1_NODE_HOSTNAME=paasta-ta-bami-cluster
 export WORKER1_NODE_PRIVATE_IP=10.170.70.201
-export WORKER2_NODE_HOSTNAME=paasta-ta-bami-cluster-2
-export WORKER2_NODE_PRIVATE_IP=10.170.70.159
+export WORKER2_NODE_HOSTNAME=paasta-ta-bami-cluster2
+export WORKER2_NODE_PRIVATE_IP=10.170.70.246
 
 
 ## Storage Type Info (eg. nfs, rook-ceph)
 export STORAGE_TYPE=nfs
-export NFS_SERVER_PRIVATE_IP=10.170.70.176
+export NFS_SERVER_PRIVATE_IP=10.170.70.174
 ~                                 
 ---------------------------------------------------------------------------
 
@@ -527,7 +564,7 @@ export NFS_SERVER_PRIVATE_IP=10.170.70.176
 
 
 
---------------------------------------------------------------[metric-server]
+----------------------------------------------------------------------------------------------[metric-server]
 kubectl get pods -n kube-system | grep metrics-server
 kubectl edit deploy -n kube-system metrics-server
 kubectl get all -n kube-system -o wide
@@ -551,7 +588,7 @@ alias k=kubectl
 complete -o default -F __start_kubectl k
 
 
------------------------------------------------------------------ [nfs server] 
+------------------------------------------------------------------------------------------------ [nfs server] 
 
 
 [master, cluster-1,cluster-2]
@@ -565,9 +602,9 @@ exportfs -v	:	볼륨 확인
 showmount -e ${nfs-serverIP}	:	서버 공유가능한 정보 확인
 rpcinfo -p [NFS_Server_IP]	:	마운트 준비
 
-mount -t nfs 10.170.70.176:/home/share/nfs /home/share/nfs-1
-mount -t nfs 10.170.70.176:/home/share/nfs /home/share/nfs-2
-mount -t nfs 10.170.70.176:/home/share/nfs /home/share/nfs-master	:	마운트 연결
+mount -t nfs 10.170.70.174:/home/share/nfs /home/share/nfs-1
+mount -t nfs 10.170.70.174:/home/share/nfs /home/share/nfs-2
+mount -t nfs 10.170.70.174:/home/share/nfs /home/share/nfs-master	:	마운트 연결
 df -h 	:	filesystem info
 
 [git clone]
@@ -690,7 +727,7 @@ mount -t nfs 10.170.70.176:/home/share/nfs /home/share/nfs-master 로 mount했�
 그래서 각 공유 폴더로 이동하면 파일 생성 및 테스트가 완료됨
 
 
---------------------------------------------------------------[configMap]
+----------------------------------------------------------------------------------------------[configMap]
 
 [configmap 생성 후 pod에게 전달 방법]
 1. 환경변수 
@@ -709,7 +746,7 @@ $ kubectl create configmap CONFIG_NAME --from-file=/configmap.dir/
 		file content는 value가됨.
 
 
-----------------------------------------------------------[service/deployment/작성]
+-----------------------------------------------------------------------------------[service/deployment/작성]
 
 
 
@@ -733,7 +770,7 @@ kubectl exec -it pod/mariadb-69d9f74d79-rrmg7 -- bash
 
 
 
-------------------------------------------------------------------------------------[mariadb]--
+------------------------------------------------------------------------------------[mariadb shell command]
 
 select host, user, password from user;
 
@@ -767,7 +804,7 @@ sudo systemctl start
 sudo systemctl start mariadb
 
 systemctl status mariadb.service
--------------------------------------------------------------------------------------------------
+
 select host, user, password from user;
 
 update user set password=password('1234') where user='bami';
@@ -775,8 +812,6 @@ update user set password=password('1234') where user='bami';
 set password for 'user'@'%' = password('1234');
 
 set password for 'bami'@'%' = password('tmdgP0425!');
-
-
 
 sudo systemctl stop mysql
 
@@ -792,12 +827,13 @@ ALTER USER 'root'@'localhost' IDENTIFIED BY 'tmdgP0425!';
 
 mysqladmin -u root -p shutdown
 
-
 sudo /etc/init.d/mysql start
 
 
 sudo systemctl start 
 sudo systemctl start mariadb
+
+---
 
 systemctl status mariadb.service
 sudo apt-get purge mariadb-server
@@ -826,6 +862,14 @@ False (MissingEndpoints)
 kubectl get svc metrics-server -n kube-system
 curl -k 10.233.37.193
 curl: (7) Failed to connect to 10.233.37.193 port 80: Connection refused
+
+
+
+
+
+
+
+
 ---------------------------------------------------------------------------------------------------
 
 issue
@@ -847,4 +891,525 @@ paasta-ta-bami-cluster-2   NotReady   <none>          7d1h   v1.24.6   10.170.70
 paasta-ta-bami-master      Ready      control-plane   7d1h   v1.24.6   10.170.70.131   <none>        Ubuntu 20.04.6 LTS   5.4.0-144-generic   cri-o://1.24.4
 
 
+-> 클러스터 재구성 함 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+kubectl create secret generic mariadb-password --from-literal='password=paastabami' --namespace="default"
+k create secret generic mysql-credential --from-file=./username --from-file=./password
+
+
+kubectl create secret generic mysql-password --from-literal='password=tmdgP0425!' --namespace="default"
+
+
+kubectl create secret generic mariadb- --from-literal='password=tmdgP0425!' --namespace="default"
+
+
+watch kubectl get pod
+
+
+
+
+
+
+
+
+
+30 8 * * 1
+
+
+
+
+
+
+
+
+
+
+
+---
+issue
+
+Error from server: error dialing backend: remote error: tls: internal error		== 인증서가 수락되지 않아서 ( certificate 'pending')
+
+kubectl get csr  --sort-by=.metadata.creationTimestamp	인증 목록 확인
+kubectl exec --v=8 -it mariadb-6c5c8d5dcb-tqscs  -- sh  오류 목록 자세히 
+
+kubectl get csr  --sort-by=.metadata.creationTimestamp 
+kubectl certificate  approve  <csr-id>
+kubectl get csr | grep Pending | awk '{print $1}' | xargs -L 1 kubectl certificate approve
+
+k exec -it  mariadb-6c5c8d5dcb-tqscs -n default -- bash
+
+---
+
+
+
+
+
+
+
+
+
+---
+issue
+
+ pod/mariadb-pod-test                                    Failed to pull image "busybox:stable": rpc error: code = Unknown desc = reading manifest stable in docker.io/library/busybox: toomanyrequests: You have reached your pull rate limit. You may increase the limit by authenticating and upgrading: https://www.docker.com/increase-rate-limit
+
+
+pod가 계속 띄워지지 않고 imagepullbackOFF만 뜸..
+아무리 찾아봐도 iaas문제이거나 혹은 yaml파일 문제래 근데 이제껏 성공해온 yaml으로 배포해줌..
+그러다 testpod 띄우는게 있어서 test해봄 (mariadb 다 지움)
+똑같이 imagepullbackoff가 떴고 그런데 log가 다른 버전이 나옴.
+
+그래서 찾아봤더니.. 
+비인증 계정은 100번이 limit인것
+https://docs.docker.com/docker-hub/download-rate-limit/#how-can-i-check-my-current-rate
+https://smelting.tistory.com/31
+
+ubuntu@paasta-ta-bami-master:~/workspace/mariadb$ TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  4415    0  4415    0     0   5741      0 --:--:-- --:--:-- --:--:--  5733
+ubuntu@paasta-ta-bami-master:~/workspace/mariadb$ TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  4415    0  4415    0     0   7019      0 --:--:-- --:--:-- --:--:--  7019
+ubuntu@paasta-ta-bami-master:~/workspace/mariadb$ ^C
+ubuntu@paasta-ta-bami-master:~/workspace/mariadb$ curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest
+HTTP/1.1 200 OK
+content-length: 2782
+content-type: application/vnd.docker.distribution.manifest.v1+prettyjws
+docker-content-digest: sha256:767a3815c34823b355bed31760d5fa3daca0aec2ce15b217c9cd83229e0e2020
+docker-distribution-api-version: registry/2.0
+etag: "sha256:767a3815c34823b355bed31760d5fa3daca0aec2ce15b217c9cd83229e0e2020"
+date: Mon, 20 Mar 2023 08:15:41 GMT
+strict-transport-security: max-age=31536000
+ratelimit-limit: 100;w=21600
+ratelimit-remaining: 100;w=21600
+docker-ratelimit-source: 115.68.198.111
+
+
+
+ratelimit-remaining: 앞에숫자 <- 이게 내가 시도한 숫자..ㅋㅋㅋ
+
+
+login을 해주자^^
+docker login -u seunghyejeong
+tlqkfak0315!
+
+
+
+apiVersion: v1  
+kind: Pod  
+metadata:  
+  name: hello-world  
+spec:  
+  containers:  
+  # specification of the pod’s containers  
+  # ...  
+  securityContext:  
+    readOnlyRootFilesystem: true
+
+
+---
+
+
+volumeMounts:
+- name: mariadb-pvc
+  mountPath: {path}
+- name: mariadb-config-volume
+  mountPath: {path}
+
+
+volume:
+- name: mariadb-pvc
+  persistentMolumeClaim:
+    claimName: mariadb-pvc
+- name: mariadb-config-volume
+  configMap:
+    name: {configMap name}
+
+
+
+---
+issue
+
+
+Installation of system tables failed!  Examine the logs in /var/lib/mysql/ for more information.
+
+The problem could be conflicting information in an external my.cnf files. You can ignore these by doing:
+
+    shell> /usr/bin/mariadb-install-db --defaults-file=~/.my.cnf
+
+You can also try to start the mariadbd daemon with:
+
+    shell> /usr/sbin/mariadbd --skip-grant-tables --general-log &
+
+and use the command line tool /usr/bin/mariadb to connect to the mysql database and look at the grant tables:
+
+    shell> /usr/bin/mariadb -u root mysql
+    MariaDB> show tables;
+
+Try '/usr/sbin/mariadbd --help' if you have problems with paths.  Using --general-log gives you a log in /var/lib/mysql/ that may be helpful.
+
+	1)
+
+      initContainers:
+      - name: take-data-dir-ownership
+        image: alpine:3
+        # Give `mysql` user permissions a mounted volume
+        # https://stackoverflow.com/a/51195446/4360433
+        command:
+        - chown
+        - -R
+        - 999:999
+        - /var/lib/mysql
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/mysql
+
+
+/usr/tmpDSK가 손상되었을 수 있습니다. 다음을 사용하여 MySQL 및 기타 응용 프로그램과 같이 /tmp에 파일이 열려 있는 모든 프로세스를 중지해야 합니다.
+
+/usr/sbin/lsof /tmp
+
+다음 명령을 해당 순서로 실행합니다.
+
+/bin/umount -l /tmp
+/bin/umount -l /var/tmp
+/bin/rm -fv /usr/tmpDSK
+
+/scripts/securetmp
+
+
+---
+error: error parsing version2-statefulset.yaml: error converting YAML to JSON: yaml: line 49: mapping values are not allowed in this context
+
+yaml 파일 시작전에 --- 하니까 됨
+
+---
+
+The StatefulSet "mariadb" is invalid: spec: Forbidden: updates to statefulset spec for fields other than 'replicas', 'template', 'updateStrategy', 'persistentVolumeClaimRetentionPolicy' and 'minReadySeconds' are forbidden
+
+배포된거 삭제하고 배포해라
+
+---
+
+  Warning  FailedScheduling  103s                default-scheduler  0/3 nodes are available: 3 pod has unbound immediate PersistentVolumeClaims. preemption: 0/3 nodes are available: 3 Preemption is not helpful for scheduling.
+
+volumes중에 안맞는 volume이 정의되어있음
+
+----
+
+---
+pod 및 접속 성공
+configmaps로 password 전달
+
+
+https://loft.sh/blog/kubernetes-statefulset-examples-and-best-practices/
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb-set
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  serviceName: "mysql"
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: mysql
+        image: mariadb
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mysql-store
+          mountPath: /var/lib/mysql
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mariadb-password
+                key: password
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-store
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: "bami-sc"
+      resources:
+        requests:
+          storage: 1Gi
+
+
+mysql -u root -p -h mariadb-set-0.default.svc.cluster.local
+
+mariadb-set-0.mysql.default.svc.cluster.local
+
+k taint nodes paasta-ta-bami-master node-role.kubernetes.io=master:NoSchedule
+
+---
+issue
+
+zone?
+sudo firewall-cmd --get-active-zones
+sudo firewall-cmd --zone=public --change-interface=docker0 --permanent
+sudo firewall-cmd --reload
+---
+
+
+
+
+---
+issue
+docker info
+WARNING: No swap limit support
+
+journalctl -u docker.service
+
+firewall-cmd --remove-interface=docker0 --permanent
+firewall-cmd --zone=trusted --remove-interface=docker0 --permanent
+systemctl start docker
+
+
+
+
+---
+info
+
+If you create a table in Pod A, the table will be available in the shared data path (/var/lib/mysql), and the other pods B and C will be able to access it as well. Similarly, any other data written to the shared data path will be accessible by all pods in the StatefulSet.
+
+However, note that MySQL is not designed to run in a shared filesystem environment. Running multiple MySQL instances on the same data directory can result in database corruption, as the instances may not have exclusive access to the data. Therefore, it is recommended to use a clustered database solution like MySQL Cluster or Percona XtraDB Cluster if you need a high availability solution for MySQL on Kubernetes.
+
+:: mysql의 db는 공유 될 수 없다.
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-cluster
+spec:
+  selector:
+    app: mysql-cluster
+  clusterIP: None
+  ports:
+  - name: mysql
+    port: 3306
+    targetPort: 3306
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-cluster
+spec:
+  selector:
+    matchLabels:
+      app: mysql-cluster
+  serviceName: mysql-cluster
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: mysql-cluster
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: mysql
+        image: percona/percona-xtradb-cluster:latest
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysql-password
+                key: password
+          - name: XTRABACKUP_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: xtrabackup-password
+                key: password
+        command:
+        - /bin/bash
+        - -c
+        - |
+          # configure node
+          if [ $(hostname -s) = "mysql-cluster-0" ]; then
+            mysql -uroot -p$MYSQL_ROOT_PASSWORD -e "CREATE USER 'cluster'@'%' IDENTIFIED BY 'cluster'; GRANT ALL PRIVILEGES ON *.* TO 'cluster'@'%' WITH GRANT OPTION;"
+            service mysql bootstrap-pxc
+          else
+            service mysql start
+          fi
+      volumes:
+      - name: mysql-data
+        persistentVolumeClaim:
+          claimName: mysql-data
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: "bami-sc"
+      resources:
+        requests:
+          storage: 1Gi
+
+
+---
+info
+volumeClaimTemplates
+스테이트풀셋의 특별함
+
+
+스테이트풀셋의 목적은 상태를 가지고 있는 것이다.
+헤드리스 서비스를 통해서 각각의 도메인을 가지므로 독립적인 도메인을 가지고 독립적으로 파드를 접근할 수 있다.
+볼륨의 관점에서 보면, 각각의 고유의 상태값을 가지므로 volumeClaimTemplates으로 클레임하면 각각의 PV를 가지게 된다.
+
+-----
+
+
+kubectl create secret generic mariadb-password --from-literal='password=root'
+
+---
+docker-entrypoint-initdb.d
+컨테이너 시작시 초기화 스크립트를 실행하기 위해 사용하는 이미지.
+---
+
+
+
+---
+info 
+docker user로 실행하기
+sudo groupadd docker : 도커 그룹이 없다면 생성
+sudo usermod -aG docker {USERNAME}
+리부트
+newgrp docker
+---
+
+
+---
+Note that the metadata section includes a name field for the StatefulSet, as well as labels that match those used in the selector field. The serviceName field specifies the name of the Kubernetes Service to use with this StatefulSet.
+
+
+```right version
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb-set
+  labels:
+    app: mariadb
+spec:
+  selector:
+    matchLabels:
+      app: mariadb
+  serviceName: mariadb
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mariadb
+```
+
+```틀림
+```yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb-set
+spec:
+  selector:
+    matchLabels:
+      app: mariadb
+  serviceName: mariadb
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mariad
+```
+
+
+``` general 순서 
+Secret
+ConfigMap
+PersistentVolumeClaim
+StatefulSet
+```
+
+
+---
+info
+
+- initcontainer로 폴더 만들어주기
+- 만든 폴더로 mount  하기
+
+```yaml
+      initContainers:
+      - name: create-mariadb-backup-dir
+        image: busybox
+        command: ['sh', '-c', 'mkdir -p /backup/mariadb']
+        volumeMounts:
+        - name: backup-script
+          mountPath: /backup
+```
+
+image : mariadb -> busybox 
+
+Q: why pulled busybox in initContainers? 
+A: 
+busybox isinitContainer sectioninitContainer isbusybox imageinitContainer toinitContainer and the main container.
+
+The busybox image is a lightweight and widely-used image that includes many common Linux utilities, including cp, which is used to copy the SQL script file from the ConfigMap to the shared volume. By using busybox, we avoid the need to install additional software or dependencies in the initContainer.
+
+Q: busybox is correct then mariadb in that case?
+
+
+
+
+
+---
+info : mount!!!!!!!!!
+
+Q: 
+If the host and the pad have the same directory, but the files are different, for example, if the file exists only on the host and the file does not exist on the pad, or if the file in the directory itself is different, which file is replaced by the host? Or a pad
+
+A:
+If the host and the pod have the same directory with different files, the file in the directory will depend on which file was mounted when the pod was created. If the host file was mounted to the pod, then the file in the pod's directory will be the same as the file on the host. If the pod file was mounted to the host, then the file in the host's directory will be the same as the file on the pod.
+
+However, if the files have different content, the mounted file will overwrite the original file. This means that if the host file is mounted to the pod and has different content than the pod file, the content of the host file will replace the content of the pod file in the directory. Similarly, if the pod file is mounted to the host and has different content than the host file, the content of the pod file will replace the content of the host file in the directory.
+
+
+Q:
+When you mount a host's folder as stateful, are the folders and data generated in the pods host?
+
+A: 
+When you mount a host's folder in a pod as a stateful volume, the folders and data are not generated in the host. Instead, the contents of the host's folder are made available to the pod as a volume. Any changes made to the contents of the volume from within the pod will be reflected in the host folder, and vice versa. So, any folders or data that are created or modified within the volume from within the pod will be visible on the host, and any changes made to the host's folder will be visible within the volume in the pod.
+
+
+kubectl create configmap mariadb-backup-script --from-file=mariadb-backup.sh
+
+securityContext.runAsNonRoot=true

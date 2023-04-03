@@ -163,7 +163,7 @@ kubectl apply -f 어쩌구 -n bami
 50. kube exec -it {podname} -c {containername} -n {namespace} -- sh
 	배포된 pod 안으로 접속
 
-
+kubectl get sc paasta-cp-storageclass -o yaml
 
 51. k약어
 

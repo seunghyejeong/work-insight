@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.opencloudplatform.edm.dao.qnaBoardMapper">
+    <insert id = "insert" parameterType="qnaboard" >
+        insert
+        into qnaboard (title, content, writer, password, register_date, update_date, publicOrNot, replyOrNot)
+        values (#{title}, #{content}, #{writer}, #{password}, now(), now(), #{publicOrNot}, #{replyOrNot})
+    </insert>
+    <select id = "select_all" resultType="qnaboard">
+        select idx, title, content, writer, password, reply, register_date, update_date, publicOrNot , replyOrNot
+        from qnaboard
+        ORDER BY register_date DESC, idx DESC
+    </select>
+    <select id = "select_public" resultType="qnaboard">
+        select idx, title, content, writer, publicOrNot
+        from qnaboard
+        where publicOrNot = 1
+        ORDER BY register_date DESC, idx DESC
+    </select>
+    <select id = "select_private"  resultType="qnaboard">
+        select idx, title, content, writer, publicOrNot
+        from qnaboard
+        where publicOrNot = 0
+        ORDER BY register_date DESC, idx DESC
+    </select>
+    <select id ="select_notReply" resultType="qnaboard">
+        select idx,title, content,writer, replyOrNot , publicOrNot
+        from qnaboard
+        where replyOrNot = 0
+        ORDER BY register_date DESC, idx DESC
+    </select>
+    <select id = "getPage" resultType="qnaboard">
+        select idx, title, content, writer, password, register_date, update_date, reply, publicOrNot , replyOrNot
+        from qnaboard
+        ORDER BY register_date DESC, idx DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+    <select id = "publicOrNot" parameterType="int">
+        select *
+        from qnaboard
+        where publicornot = 1
+    </select>
+    <update id="update" parameterType="qnaboard">
+        update qnaboard
+        set
+           title = #{title}
+        , content = #{content}
+        , password = #{password}
+        , publicOrNot = #{publicOrNot}
+        , replyOrNot = #{replyOrNot}
+        , update_date = now()
+        where idx = #{idx}
+    </update>
+    <delete id ="deleteAll">
+        delete
+        from qnaboard
+    </delete>
+    <delete id="delete" parameterType="map">
+        delete
+        from qnaboard
+        where idx = #{idx} and writer = #{writer}
+    </delete>
+    <select id = "totalCnt" resultType="int">
+        select count(*)
+        from qnaboard
+    </select>
+</mapper>

@@ -97,7 +97,7 @@ sudo apt autoremove
 sudo apt-get purge mysql-common
 sudo rm -rf /var/log/mysql
 sudo rm -rf /var/log/mysql.*
-sudo rm -rf /var/lig/mysql
+sudo rm -rf /var/lib/mysql
 sudo rm -rf /var/etc/mysql
 sudo ln -sf /usr/share/zoneinfo/Asia/Seoul/etc/localtime  //타임존 설정파일 대체
 sudo timedatectl set-timezone 'Asia/Seoul' //명령어로 설정
@@ -178,8 +178,112 @@ systemctl status mariadb.service
 
 ---
 
+select host, user, password from user;
 sudo mariadb -u root -p
 CREATE USER 'bami'@'localhost' IDENTIFIED BY 'tmdgP0425!';
 GRANT ALL PRIVILEGES ON *.* TO 'bami'@'localhost' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 mysql -u newuser -p
+
+
+---
+
+[mariadb dump]
+
+mariadb -u root -p 
+
+show databases;
+
+<dump 뜰 파일 데이터베이스 선택>
+
+확인 후 exit
+
+sudo mysqldump -u root -p ${database_name} > ${dumpFilename}.sql
+
+sudo mysqldump -u root -p mysql > mysql.sql
+
+30 8 * * 1
+
+create user 'edmadmin'@'localhost' identified by 'PaaS-TA@admin';
+
+create user 'edmadmin'@'localhost' identified by 'master77!!';
+create user 'edmadmin'@'%' identified by 'master77!!';
+create database paasta_edm default character set utf8;
+
+
+grant all privileges on *.* to 'edmadmin'@'localhost' identified by 'master77!!';
+grant all privileges on *.* to 'edmadmin'@'%' identified by 'master77!!';
+flush privileges;
+
+curl -l 45.248.73.44:8080
+
+
+dump-paasta_edm-202302091650.sql
+
+---
+issue
+
+curl: (7) Failed to connect to 45.248.73.44 port 8080: No route to host
+    : 방화벽 문제 
+        systemctl stop firewalld
+
+netstat -nltp | grep 3306
+tcp        0      0 127.0.0.1:33060         0.0.0.0:*               LISTEN      2740/mysqld         
+tcp        0      0 127.0.0.1:3306          0.0.0.0:*               LISTEN      2740/mysqld 
+
+    : bind port가 모두에게 열린 상태가 아님
+
+        /etc/mysql/mysql.conf.d/mysqld.conf
+        : bindaddress : 0.0.0.0 수정
+
+tcp        0      0 127.0.0.1:33060         0.0.0.0:*               
+LISTEN      4393/mysqld         
+tcp        0      0 0.0.0.0:3306            0.0.0.0:*               LISTEN      4393/mysqld    
+
+
+iptables -A INPUT -p tcp --dport 8080 -j ACCEPT
+firewall-cmd --zone=public --add-port=8080/tcp --permanent
+firewall-cmd --reload
+
+
+---
+issue
+i push command sudo systemctl restart 
+
+
+$ systemctl restart mysql
+mysql return error.
+and 
+$systemctl status mysql.service 
+return
+● mysql.service - MySQL Community Server
+     Loaded: loaded (/lib/systemd/system/mysql.service; enabled; vendor preset: enabled)
+     Active: activating (start) since Fri 2023-03-24 04:32:58 UTC; 512ms ago
+    Process: 9858 ExecStartPre=/usr/share/mysql/mysql-systemd-start pre (code=exited, status=0/SUCCESS)
+   Main PID: 9866 (mysqld)
+     Status: "Server startup in progress"
+      Tasks: 13 (limit: 4677)
+     Memory: 305.7M
+     CGroup: /system.slice/mysql.service
+             └─9866 /usr/sbin/mysqld
+
+sudo tail -n 50 /var/log/mysql/error.log
+    Can't start server: Bind on TCP/IP port: Cannot assign requested address
+    Do you already have another mysqld server running on port: 3306 ?
+
+ps -ef | grep mysqld
+mysql      13548       1 34 04:36 ?        00:00:01 /usr/sbin/mysqld
+root       13590    8423  0 04:36 pts/1    00:00:00 grep --color=auto mysqld
+
+
+
+ip addr show
+     inet 10.0.30.130/24 brd 10.0.30.255 scope global dynamic ens3
+      valid_lft 27254sec preferred_lft 27254sec
+
+vim /etc/mysql/mysql.conf.d/mysqld.cnf
+bind-address: 10.0.30.130
+systemctl restart mysql
+systemctl status mysql.service
+
+

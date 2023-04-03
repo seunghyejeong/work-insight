@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.opencloudplatform.edm.dao.adminMapper">
+
+    <select id = "select" parameterType="string" resultType="admin">
+        select *
+        from admin
+        where adminId = #{adminId}
+    </select>
+
+    <insert id="insert" parameterType="admin">
+        insert
+        into admin (adminId, adminPw, adminName)
+        values (#{adminId}, #{adminPw} ,#{adminName})
+    </insert>
+
+    <delete id="delete" parameterType="string">
+        delete
+        from admin
+        where adminId = #{adminId}
+    </delete>
+
+    <delete id="deleteAll">
+        delete
+        from admin
+    </delete>
+</mapper>
