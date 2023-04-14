@@ -46,7 +46,7 @@ boardlist.jsp
 	1. 보안점검 
 	 	- portal API/UI 
 		  ::CCE 점검완료
-	
+
 
 	3. portal linux 실행
 		:완료
@@ -77,7 +77,7 @@ redis 			mariadb		paas-ta-on-demand	redis
 
 
 	#0206-7
-
+	
 	- 보안점검 
 			
 	service		linux 	  linux-info		cce 		 cve 
@@ -87,23 +87,23 @@ redis 			mariadb		paas-ta-on-demand	redis
 	lifecycle     o          ㅇ 	           o           o
 					(postgresql: o  )
 	
-    glusterfs     ㅇ 		  ㅇ   			 ㅇ 		  ㅇ	 
+	glusterfs     ㅇ 		  ㅇ   			 ㅇ 		  ㅇ	 
 
 
 	mysql         ㅇ 		  ㅇ	  		  ㅇ          ㅇ
 		
 	gateway       ㅇ  	      ㅇ			  ㅇ          ㅇ 
-			
+
 
 	logging-ser   ㅇ 		  ㅇ 			  ㅇ 		  ㅇ 
-
+	
 	mongodb   	:: 배포 진행중 
-
+	
 	pinpoint      ㅇ 		  ㅇ  			  ㅇ 		  ㅇ 	
 
 
 	pipeline      ㅇ		  ㅇ 			  ㅇ 	      ㅇ
-
+	
 	source-ctr    ㅇ 		  ㅇ 			  ㅇ 		  ㅇ 
 
 
@@ -136,7 +136,7 @@ but the deployment does not exist
 
 
 
-#0209
+# 230209
 
 공모전 시작작자가가가가가가 
 
@@ -172,15 +172,14 @@ but the deployment does not exist
 각 메뉴별 개발 (공지사항, 묻고답하기, 수상결과 등!! )
 해당 메뉴들이 관리자 쪽에서 활용될 수 있으면 좋겠다.
 
-
-#0210
+# 230210
 
 - 전자정부프레임워크 활용하여 기본틀 만들기 
 	sitemesh
 - 관리자 로그인 로직 생성 
 
 
-# 0213 
+# 230213 
 
 1. 관리자 페이지 만들기 
 2. 관리자 로그인 로직 생성 
@@ -189,7 +188,8 @@ but the deployment does not exist
 
 
 
-#0215
+# 230215
+
 1. db에 ws/ss 백업 	 :: 완료 
 2. project - db 연결 :: 완료 
 3. 게시판 만들기 	 :: 이따해보자 
@@ -198,9 +198,9 @@ but the deployment does not exist
 1. 구글 드라이브에 파일 만들기 
 :완료
 
-
-#2016
+# 230216
 --- main
+
 1. 호환성 사전 협의 회의 
 2. 보안점검
 --- sub
@@ -210,7 +210,7 @@ but the deployment does not exist
 
 계정 정보 미리 드릴게요 ...ㅎㅎ 
 ---
-# luna vsphere
+luna vsphere
 
 host
 - 10.0.20.13
@@ -221,7 +221,7 @@ pw
 
 ====================================================
 
-# luna rapid-7 vsphere
+luna rapid-7 vsphere
 
 host
 - 10.0.20.15
@@ -231,18 +231,20 @@ pw
 - PaaS-TA@luna
 
 username: paasta
-pw: PaaS-TA@2023
-====================================================
 
-#0217
+pw: PaaS-TA@2023
+
+# 230217
 ---main 
+
 1. paasta 보안점검
 2. 호환성 
 	:메일송부완료
----sub
+	---sub
 1. userdao/ qnadao 만들어서 db연결시키기
 	:완료
 	
+
 퇴근전 백업 하기 
 
 9:05 AM Monday, February 20, 2023
@@ -255,7 +257,8 @@ pw: PaaS-TA@2023
 
 
 
-#230221
+# 230221
+
 1. qna/notice board :: 완료 
 2. 페이징 처리 
 3. 보안점검
@@ -271,21 +274,21 @@ Test
         Integer bno = boardDao.selectAll().get(0).getBno();
         assertTrue(boardDao.delete(bno, boardDto.getWriter())==1);
         assertTrue(boardDao.count()==0);
-
+    
         assertTrue(boardDao.insert(boardDto)==1);
         bno = boardDao.selectAll().get(0).getBno();
         assertTrue(boardDao.delete(bno, boardDto.getWriter()+"222")==0);
         assertTrue(boardDao.count()==1);
-
+    
         assertTrue(boardDao.delete(bno, boardDto.getWriter())==1);
         assertTrue(boardDao.count()==0);
-
+    
         assertTrue(boardDao.insert(boardDto)==1);
         bno = boardDao.selectAll().get(0).getBno();
         assertTrue(boardDao.delete(bno+1, boardDto.getWriter())==0);
         assertTrue(boardDao.count()==1);
     }
-	
+
    @Test
     public void updateTest() throws Exception {
         boardDao.deleteAll();
@@ -297,18 +300,18 @@ Test
         boardDto.setBno(bno);
         boardDto.setTitle("yes title");
         assertTrue(boardDao.update(boardDto)==1);
-
+    
         BoardDto boardDto2 = boardDao.select(bno);
         assertTrue(boardDto.equals(boardDto2));
     }
 
+# 230222
 
-#230222
 - 게시판 페이징처리 
 - sitemesh 재적용
 
+# 230223
 
-#230223
 - 페이징처리
 - write modify
 	::못함 ㅠ 
@@ -320,14 +323,15 @@ Test
 
 	
 	 ps -ef | grep nginx
-/var/vcap/packages/bpm/bin/tini -w -s -- /var/vcap/jobs/blobstore/bin/blobstore_nginx
- /var/vcap/packages/nginx_webdav/sbin/nginx -c /var/vcap/jobs/blobstore/config/nginx.conf -g worker_processes 2;
-:client_body_temp_path
-ps -ef | grep nginx
+	/var/vcap/packages/bpm/bin/tini -w -s -- /var/vcap/jobs/blobstore/bin/blobstore_nginx
+	 /var/vcap/packages/nginx_webdav/sbin/nginx -c /var/vcap/jobs/blobstore/config/nginx.conf -g worker_processes 2;
+	:client_body_temp_path
+	ps -ef | grep nginx
 
 
 
-#230224 
+# 230224 
+
 - 페이징..
 - 보안점검 엑셀 
 
@@ -378,44 +382,50 @@ ps -ef | grep nginx
 	paasta-7vms 
 		: control - Tomcat 수정 
 		: singleton-blobstore - nginx 
-
+	
 	paasta-4vms control uaa log 	
-
+	
 	/var/vcap/packages/nginx_webdav/sbin/nginx
 	 /var/vcap/jobs/blobstore/bin/blobstore_nginx
 	 /var/vcap/jobs/blobstore/config/nginx.conf 
 
 
 
-#230227
+# 230227
+
  - 페이징
  - 읽기 쓰기 수정 삭제 기능
 
 	 
+
 오후(화,목,금)
  - k8s docs
  - minikube
 	 - 기본 익히기
- 
 
 
-#230302
+
+# 230302
+
 - k8s 실습
 - pod 
 - 
 
-#230303
+# 230303
+
 - replicaset
 - deployment
 - service 
 
-#230306
+# 230306
+
 - 호환성 support
 - kubernetes service / ingress :: 완
 - k8s: RabbitMQ 구성 & sample App 연결
 - k8s kubespray/kubeedm으로 두번 다 설치 해보깅
 
-#230307
+# 230307
+
 - kuberntes 환경축하기 : 완료
 - kubespray 환경구축하기 : 
 
@@ -471,7 +481,7 @@ https://kubernetes.io/ko/docs/tasks/job/automated-tasks-with-cron-jobs/
 
 
 
-#230309
+# 230309
 kubespray 환경구축하기
 
 #020310
@@ -482,7 +492,7 @@ configmap: 진행중
 
 
 
-#230313
+# 230313
 
 configmap
 deployment
@@ -490,7 +500,7 @@ service
 
 작성
 
-#230314
+# 230314
 
 호환성 검증 시나리오 작성 :: 수정사항이 있어 일시 중단
 
@@ -507,12 +517,10 @@ mariadb 업로드
 
 - 목표설정 일정 : ~3월 24일 (금)
 
-
-#230321
+# 230321
 readyonly 파일 허용되게 배포해보기.
 안되면 일단  임시 경로로 바꾼 후 pod띄운 후 coronjob 진행 
 backup용 pod 띄워
-
 
 ㅡㅡ
 비번안쓴다했는데ㅡㅡ
@@ -520,12 +528,11 @@ backup용 pod 띄워
 
 
 
-#230323
+# 230323
 
 2023년도 다 적
 확인서 발급 완료건
 22년 완료된 것 기준으로 업데이트 
-
 
 email 첨부파일 -> 현황  보고 
 google sheet -> 업데이트 시키기 
@@ -543,14 +550,13 @@ svn -> git private repository 생성 ( 구축 후 다시 )
 
     String dbUSERNAME = "edmadmin";
     String dbPASSWORD = "master77!!";
-
+    
     tomcat 9버전 (20.04에선 8버전 지원x)
 
 
     master77!!
-    
 
-#20230324
+# 20230324
 
 DB작업 완료
 db test 완료
@@ -577,7 +583,7 @@ cronjob 진행중
 
  mariadb-backup-script: 완료 
  산출물 작성 :: 완료
- 
+
 
 
 # 230403
@@ -605,24 +611,22 @@ paasta123!@#
 - k8s
 도메인 등록 지원
 
-#230410
+# 230410
 카카오 csp 조사
 호환성 검증 시나리오 :: 진행중
 
 이노그리드 인프라닉스  
 
-#230411
+# 230411
 
 검증 시나리오 :: 완료
 
-
-#230412
+# 230412
 
 테스트 환경 검증
 ncp 공부
 
-
-#230413
+# 230413
 
 28080에서 LB를 타고 Cluster로 오는건 알겠는데 그 이후  어떤 pod로 떨어지는지 ?
 
@@ -639,9 +643,17 @@ CV-RS-2022-034_파스-타 호환성 검증 시나리오 결과서_유니닥스
 
 # 230414
 
+1. k8s: DevOps for MSA
 
-k8s: DevOps for MSA
-- CI/CD 환경 구축 및 MSA application 구현 
-- helm + jenkins + argo CD (gitOps) + sonarqube
-https://tech.kakao.com/2021/07/16/devops-for-msa/
-\\192.168.0.24\파트폴더\기술지원팀\05.산출물\2023_산출물\0.sub_task_산출물\DevOps
+   - CI/CD 환경 구축 및 MSA application 구현 
+
+     helm + jenkins + argo CD (gitOps) + sonarqube
+     https://tech.kakao.com/2021/07/16/devops-for-msa/
+     \\192.168.0.24\파트폴더\기술지원팀\05.산출물\2023_산출물\0.sub_task_산출물\DevOps
+
+2. openlab
+
+   - IAM계정 생성
+
+   
+
