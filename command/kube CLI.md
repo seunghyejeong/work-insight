@@ -82,7 +82,7 @@ kubectl apply -f 어쩌구 -n bami
 
 24. kubectl get pod red-app -n bami -o jsonpath="{.status.podIP}" == kubectl get pod red-app -o wide
 	pod ip 조회
------ kubectl 이하 k----
+	----- kubectl 이하 k----
 
 25. k get rs <replicasetName> -o wide
 	replicaset 생성 결과 조회
@@ -166,7 +166,6 @@ kubectl apply -f 어쩌구 -n bami
 kubectl get sc paasta-cp-storageclass -o yaml
 
 51. k약어
-
 
 source <(kubectl completion bash)
 echo "source <(kubectl completion bash)"

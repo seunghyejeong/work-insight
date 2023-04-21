@@ -655,20 +655,37 @@ CV-RS-2022-034_파스-타 호환성 검증 시나리오 결과서_유니닥스
 
    
 
-# 230414
+# 230415
 
 2.  
 
-   
+# 230417
 
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
+젠킨스 , cicd 개념 공부 
+
+
+
+# 230418
+
+휴가
+
+# 230419
+
+1. 오픈랩 문의건 : 오픈랩 기술지원현황시트에 기입하기
+
+- CI tool :: jenkins(git연동/install plugin/user생성)
+
+- CD tool :: ArgoCD (CLI,app(ui))
+
+  
+
+# 230420
+
+1. sub-task : ingress 설정
+2. SW진단 가이드 test
+
+# 230421
+
+1. openstack project별 instance 모두 삭제하기.
+
+

@@ -14,18 +14,18 @@ alias kubectl="minikube kubectl --"
 
 
 	issue	
-
+	
 	1) unable conf 어쩌고저쩌고
 		minikube start --driver=docker
 		minikube config set driver docker
 	2) 
 	E0228 07:09:45.921494    8914 memcache.go:238] couldn't get current server API group list: Get "http://localhost:8080/api?timeout=32s": dial tcp 127.0.0.1:8080: connect: connection refused
 	The connection to the server localhost:8080 was refused - did you specify the right host or port?
-
+	
 	docker 설치 후 /var/run/docker.sock의 permission denied 
 		sudo chmod 666 /var/run/docker.sock	
 		sudo chown root:docker /var/run/docker.sock
-	
+
  minikube start
  	Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
 
@@ -419,7 +419,7 @@ $kubectl version --output=yaml
  $kubectl describe pod/metrics-server-584974b8b6-rh9mv -n kube-system
   Events:
   Type     Reason     Age                  From     Message
-  ----     ------     ----                 ----     -------
+----     ------     ----                 ----     -------
   Warning  Unhealthy  83s (x410 over 61m)  kubelet  Readiness probe failed: HTTP probe failed with statuscode: 500
 
 $kubelet log
@@ -450,7 +450,7 @@ $kubectl edit metirics-server-deployment.yml
         - --kubelet-use-node-status-port
         - --kubelet-insecure-tls
         - --metric-resolution=30s
-
+    
       containers:
       - name: metrics-server
         image: k8s.gcr.io/metrics-server-amd64:v0.3.1
@@ -493,7 +493,7 @@ netstat -nap
 /home/share/nfs 10.170.70.215(rw,no_root_squash,async)
 /home/share/nfs 10.170.70.201(rw,no_root_squash,async)
 /home/share/nfs 10.170.70.246(rw,no_root_squash,async)
- 
+
 --------------------------------------------------------------------
 
 nfs 10.170.70.176 115.68.198.67 
@@ -517,7 +517,7 @@ ubuntu/paastata
 
 -----------------------------------------------------------------cp-cluster-vars.sh
 #!/bin/bash
- 
+
 export MASTER_NODE_HOSTNAME=paasta-ta-bami-master
 export MASTER_NODE_PUBLIC_IP=61.252.53.231
 export MASTER_NODE_PRIVATE_IP=10.77.1.22
@@ -539,7 +539,7 @@ export NFS_SERVER_PRIVATE_IP=10.77.1.25
 
 -----------------------------------------------------------------cp-cluster-vars.sh
 #!/bin/bash
- 
+
 export MASTER_NODE_HOSTNAME=paasta-ta-bami-master
 export MASTER_NODE_PUBLIC_IP=115.68.198.111
 export MASTER_NODE_PRIVATE_IP=10.170.70.215
@@ -559,10 +559,6 @@ export STORAGE_TYPE=nfs
 export NFS_SERVER_PRIVATE_IP=10.170.70.174
 ~                                 
 ---------------------------------------------------------------------------
-
-
-
-
 
 ----------------------------------------------------------------------------------------------[metric-server]
 kubectl get pods -n kube-system | grep metrics-server
@@ -655,7 +651,7 @@ VolumeMode:    Filesystem
 Used By:       <none>
 Events:
   Type    Reason                Age                    From                         Message
-  ----    ------                ----                   ----                         -------
+----    ------                ----                   ----                         -------
   Normal  ExternalProvisioning  2m32s (x122 over 32m)  persistentvolume-controller  waiting for a volume to be created, either by external provisioner "k8s-sigs.io/nfs-subdir-external-provisioner" or manually created by system administrator
 > 시간 지나고 저절로 바운딩 됨.
 
@@ -669,7 +665,7 @@ spec:
   - name: nfs-pvc
     persistentVolumeClaim:
       claimName: mariadb-pvc
-  containers:
+    containers:
     - name: nfs-pvc-test
       image: nginx:alpine
       ports:
@@ -678,7 +674,7 @@ spec:
       volumeMounts:
         - name: nfs-pvc
           mountPath: /tmp
-[test2]
+          [test2]
 
 kind: Pod
 apiVersion: v1
@@ -696,8 +692,8 @@ spec:
     volumeMounts:
       - name: nfs-pvc
         mountPath: "/mnt"
-  restartPolicy: "Never"
-  volumes:
+      restartPolicy: "Never"
+      volumes:
     - name: nfs-pvc
       persistentVolumeClaim:
         claimName: mariadb-pvc
@@ -1067,20 +1063,20 @@ and use the command line tool /usr/bin/mariadb to connect to the mysql database 
 Try '/usr/sbin/mariadbd --help' if you have problems with paths.  Using --general-log gives you a log in /var/lib/mysql/ that may be helpful.
 
 	1)
-
-      initContainers:
-      - name: take-data-dir-ownership
-        image: alpine:3
-        # Give `mysql` user permissions a mounted volume
-        # https://stackoverflow.com/a/51195446/4360433
-        command:
-        - chown
-        - -R
-        - 999:999
-        - /var/lib/mysql
-        volumeMounts:
-        - name: data
-          mountPath: /var/lib/mysql
+	
+	  initContainers:
+	  - name: take-data-dir-ownership
+	    image: alpine:3
+	    # Give `mysql` user permissions a mounted volume
+	    # https://stackoverflow.com/a/51195446/4360433
+	    command:
+	    - chown
+	    - -R
+	    - 999:999
+	    - /var/lib/mysql
+	    volumeMounts:
+	    - name: data
+	      mountPath: /var/lib/mysql
 
 
 /usr/tmpDSK가 손상되었을 수 있습니다. 다음을 사용하여 MySQL 및 기타 응용 프로그램과 같이 /tmp에 파일이 열려 있는 모든 프로세스를 중지해야 합니다.
@@ -1419,20 +1415,20 @@ securityContext.runAsNonRoot=true
 ---
 mariadb conclusion
 1. cronjob이 pod로 생성된다는 점을 간과함.
-  : cronjob의 pod가 mariadb pod로 접속해야함
-  : mariadb pod의 고유주소 필요
-  -> mariadb service endpoints 
+    : cronjob의 pod가 mariadb pod로 접속해야함
+    : mariadb pod의 고유주소 필요
+    -> mariadb service endpoints 
 2. nfs  server를 master에만 설치 
-  : mount 오류
+    : mount 오류
 3. volumemount 
-  : statefulset으로 생성된 volume의 calimName 이름을 정확히 입력.
+    : statefulset으로 생성된 volume의 calimName 이름을 정확히 입력.
 
 * headless service
   statefulset으로 배포될때는 headless service를 이용한다
   1.pod 각각의 고유한 ip를 가져야 할 때 
   2.headless service는 pod 각각의 ip를 endpoint로 가지고 있다. 
     : 이를 통해 pod접속 가능함
-    
+  
 
 
 test2 table
