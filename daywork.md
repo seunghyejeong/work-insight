@@ -674,7 +674,6 @@ CV-RS-2022-034_파스-타 호환성 검증 시나리오 결과서_유니닥스
 1. 오픈랩 문의건 : 오픈랩 기술지원현황시트에 기입하기
 
 - CI tool :: jenkins(git연동/install plugin/user생성)
-
 - CD tool :: ArgoCD (CLI,app(ui))
 
   
@@ -687,5 +686,11 @@ CV-RS-2022-034_파스-타 호환성 검증 시나리오 결과서_유니닥스
 # 230421
 
 1. openstack project별 instance 모두 삭제하기.
+	paasta-edu :: 완료
+	paasta-monitoring :: 없음(완료)
+	paasta-cvs :: 완료
+
+2. 호환성 진행 : 나무기술 
 
 
+# 230424
