@@ -24,6 +24,7 @@ export NFS_SERVER_PRIVATE_IP=10.101.0.159
 
 
 
+Jenkins를 이용한 container image push -> Container Registry 
 
 
 # jenkins
@@ -192,7 +193,7 @@ chmod +x /usr/local/bin/argocd
 
 # git : 
 
-# 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
+# token: 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
 
 kubectl get pods -n argocd -l app.kubernetes.io/name=argocd-server -o name | cut -d'/' -f 2
 
@@ -273,6 +274,14 @@ id : jeongbami
 
 argocd repo add ssh://git@github.com:jeongbami/msa.git --ssh-private-key-path ~/workspace/ssh-keys/argocd/argocd-github-key-rsa
 
+argocd repo add git@github.com:jeongbami/service-repository.git --username myuser --password mypassword
+
+argocd repo add git@github.com:jeongbami/service-repository.git --ssh-private-key-path ~/.ssh/argocd-github-key-rsa
+
+argocd repo add git@github.com:jeongbami/service-repository.git --ssh-private-key-path ~/.ssh/argocd-github-key-rsa --insecure-ignore-host-key
+
+argocd repo add ssh://git@github.com:1122/jeongbami/service-repository.git --ssh-private-key-path ~/.ssh/argocd-github-key-rsa --insecure-ignore-host-key
+
 -----BEGIN OPENSSH PRIVATE KEY-----
 b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZWQyNTUxOQAAACDdk1H2/AMHyf4IZKkcnFXh1+FAaibO586Q6uypZXZdQAAAAKCCIcI2giHCNgAAAAtzc2gtZWQyNTUxOQAAACDdk1H2/AMHyf4IZKkcnFXh1+FAaibO586Q6uypZXZdQAAAAEB6BniLQmAtyvlGuSb1Crx42Zu8N9fG8H9eRbZDJ1b+Wd2TUfb8AwfJ/ghkqRycVeHX4UBqJs7nzpDq7Klldl1AAAAAGHVidW50dUB0YS1iYW1pLWNsdXN0ZXItMQECAwQF
 -----END OPENSSH PRIVATE KEY-----
@@ -280,14 +289,14 @@ b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZWQyNTUxOQAA
 
 
 argocd login 10.101.0.237:32056 --port-forward-namespace argocd
-
+argocd login 10.101.0.237:30007
 ## 	<issue>
 
 1. argocd -- git  connect 
 
    - 10.101.0.237:32056 // 20.200.245.247:22 커넥이 안되는 상태 
 
-   argocd repo add ssh://git@20.200.245.247/jeongbami/msa.git --ssh-private-key-path ~/workspace/ssh-keys/argocd/argocd-github-key-rsa
+argocd repo add ssh://git@20.200.245.247/jeongbami/msa.git --ssh-private-key-path ~/.ssh/argocd-github-key-rsa
 
    - ingress
 
@@ -607,5 +616,162 @@ Receiving objects: 100% (402/402), 93.89 MiB | 9.52 MiB/s, done.
 Resolving deltas: 100% (68/68), done.
 ```
 
+```
+ssh -vT git@github.com    로그확인
+```
+
+kubectl config set-context --current --namespace=argocd
+
+argocd login --insecure 10.101.0.58:32443
+
+yHcahZpsaaf5EkNd
+
+kubectl config set-cluster cluster.local --server=https://10.101.0.104:6443
+kubectl config use-context my-context
 
 
+kubectl config set-cluster cluster.local --server=https://10.233.0.1:443
+```
+$ k config view
+$ ubuntu@ta-bami-cluster-1:~$ k config view
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://127.0.0.1:6443
+  name: cluster.local
+contexts:
+- context:
+    cluster: cluster.local
+    namespace: argocd
+    user: kubernetes-admin
+  name: kubernetes-admin@cluster.local
+current-context: kubernetes-admin@cluster.local
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+
+A:  the server URL for the cluster.local
+
+$ k describe kube-apiserver-ta-...
+$ Name:                 kube-apiserver-ta-bami-cluster-1
+Namespace:            kube-system
+Priority:             2000001000
+Priority Class Name:  system-node-critical
+Node:                 ta-bami-cluster-1/10.101.0.104
+Start Time:           Mon, 17 Apr 2023 05:37:01 +0000
+Labels:               component=kube-apiserver
+                      tier=control-plane
+Annotations:          kubeadm.kubernetes.io/kube-apiserver.advertise-address.endpoint: 10.101.0.104:6443
+                      kubernetes.io/config.hash: 0d70436ee085f728304bba21acc78180
+                      kubernetes.io/config.mirror: 0d70436ee085f728304bba21acc78180
+                      kubernetes.io/config.seen: 2023-04-17T05:36:54.009611491Z
+                      kubernetes.io/config.source: file
+Status:               Running
+IP:                   10.101.0.104
+IPs:
+  IP:           10.101.0.104
+
+
+
+$ kubectl config set-cluster cluster.local --server=https://10.101.0.104:6443
+
+
+Q: why current server is 127.0.0.1:6443 in kubectl config nownow?
+A: The reason why the current server in your kubectl configuration is set to 127.0.0.1:6443 is that this is the default address that kubectl uses to connect to the Kubernetes API server when you run commands on the same machine where the Kubernetes API server is running.
+
+When you run kubectl commands on a different machine, you need to set the server field in your kubectl configuration to the IP address or hostname of the machine where the Kubernetes API server is running, as I described earlier.
+
+If you are currently running kubectl on the same machine where the Kubernetes API server is running, then you can leave the server field as 127.0.0.1:6443. However, if you plan to run kubectl on a different machine, you will need to update this field accordingly.
+```
+kubectl config set-credentials my-credentials --username=<username> --password=<password>
+kubectl config set-context my-context --cluster=my-k8s-cluster --user=my-credentials
+kubectl config use-context my-context
+
+
+# argocd위한 application.yaml
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: java-web-app
+spec:
+  destination:
+    server: <ARGOCD_SERVER> 10.101.0.58:32443 
+    namespace: <TARGET_NAMESPACE> edu
+  source:
+    repoURL: <GIT_REPO_URL>  git@github.com:jeongbami/gitops-repository.git 
+    path: <PATH_TO_APP> src/main/java
+    targetRevision: <GIT_BRANCH_OR_TAG> HEAD
+  project: edu
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+  syncWave: 1
+  healthChecks:
+    - name: liveness
+      command:
+        - "curl"
+        - "-f"
+        - "http://localhost:8080/health"
+  plugin:
+    name: helm
+    env:
+      - name: JAVA_OPTS
+        value: "-Djava.security.egd=file:///dev/urandom"
+  values:
+    - name: image.tag
+      value: "latest"
+    - name: service.port
+      value: "8080"
+    - name: service.type
+      value: "ClusterIP"
+    - name: tomcat.image
+      value: "tomcat:9.0.73-jdk8-temurin-focal"
+    - name: tomcat.contextPath
+      value: "/"
+    - name: tomcat.javaOpts
+      value: "-Xmx512m -Djava.security.egd=file:/dev/./urandom"
+    - name: tomcat.warFile
+      value: "edu-msa-ui-1.0.0.war"
+```
+
+# service.yaml
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-java-app-service
+  namespace: my-namespace
+spec:
+  selector:
+    app: my-java-app
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+```      
+
+
+
+git config --global url."https://github.com/".insteadOf git@github.com
+git config --global url."https://".insteadOf git://
+
+<tomcat-7>
+ <Valve className="org.apache.catalina.valves.AccessLogValve"
+allow="127\. \d+\. \d+\. \d+|::1|0:0:0:0:0:0:0:1||{jenkins server IP}"/>
+
+<tomcat-9>
+<Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+       prefix="localhost_access_log" suffix=".txt"
+       pattern="%h %l %u %t &quot;%r&quot; %s %b" 
+       condition="remoteHost.matches('127\\..*') || remoteHost.matches('0:0:0:0:0:0:0:1') || remoteHost.matches('10.101.0.145')"/>

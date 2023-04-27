@@ -7,7 +7,7 @@ https://tech.kakao.com/2021/07/16/devops-for-msa/
 
 ## 1. 카카오톡, 배민 사례
 
-배포도구:helm
+
 
 1. 1.클러스터 분리
 
@@ -227,4 +227,3 @@ Base 및 Overlay를 사용한 수정된 manifest를 적용한다
   > Platform Repository: 플랫폼 및 kubernetes 프로비저닝을 위한 IaC 코드관리
   > Management Repository kubernetes 관리를 위한 설정, 시스템 배포 코드 관리 
   > Service Repository: 컨테이너 기반의 서비스 앱 개발 소스코드 관리
-  
