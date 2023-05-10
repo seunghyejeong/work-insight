@@ -210,9 +210,12 @@ create user 'edmadmin'@'localhost' identified by 'master77!!';
 create user 'edmadmin'@'%' identified by 'master77!!';
 create database paasta_edm default character set utf8;
 
+CREATE USER 'kpu-admin'@'localhost' IDENTIFIED BY 'kpu2023!';
+CREATE USER 'kpu-admin'@'%' IDENTIFIED BY 'kpu2023!';
 
-grant all privileges on *.* to 'edmadmin'@'localhost' identified by 'master77!!';
-grant all privileges on *.* to 'edmadmin'@'%' identified by 'master77!!';
+
+grant all privileges on *.* to 'kpu-admin'@'localhost';
+grant all privileges on *.* to 'kpu-admin'@'%';
 flush privileges;
 
 curl -l 45.248.73.44:8080

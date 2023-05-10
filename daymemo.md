@@ -65,3 +65,45 @@ Reference :
 to : dk.lee@namutech.co.kr
 cc : hongjoon.kim@namutech.co.kr, HyoJin Jin <jins@irevit.co.kr>
 	REVIT 이세영 전임님 <lsy77877@irevit.co.kr>
+
+
+
+호환성 확인 서비스는 다양한 SW·서비스들이 파스-타 환경에서 동작하는지 확인하는 서비스임 
+NKS의 경우 파스-타 환경에서 하나의 Service가 동작하는 것과 마찬가지 
+그러므로 호환성을 위해서는 환경을 직접 구축 해보는것이 맞고
+파스-타를 경험해보고 싶다면 NKS 환경으로도 무방해보임 
+kubectl apply -f /home/ubuntu/workspace/dev-tools/paas-ta-container-platform-deployment/standalone/applications/ingress-nginx-1.4.0/deploy.yaml\
+
+
+---
+
+cd ~/edu-msa-file/Docker/edu-msa-board/
+podman build --tag edu-msa-board .
+podman tag edu-msa-board seunghyejeong/edu-msa-board:1.0
+podman push seunghyejeong/edu-msa-board:1.0
+
+cd ~/edu-msa-file/Docker/edu-msa-comment
+podman build --tag edu-msa-comment .
+podman tag edu-msa-comment seunghyejeong/edu-msa-comment:1.0
+podman push seunghyejeong/edu-msa-comment:1.0
+
+cd ~/edu-msa-file/Docker/edu-msa-user/
+podman build --tag edu-msa-user .
+podman tag edu-msa-user seunghyejeong/edu-msa-user:1.0
+podman push seunghyejeong/edu-msa-user:1.0
+
+cd ~/edu-msa-file/Docker/edu-msa-ui/ 
+podman build --tag edu-msa-ui .
+podman tag edu-msa-ui seunghyejeong/edu-msa-ui:1.0
+podman push seunghyejeong/edu-msa-ui:1.0
+
+cd ~/edu-msa-file/Docker/edu-msa-zuul/
+podman build --tag edu-msa-zuul .
+podman tag edu-msa-zuul seunghyejeong/edu-msa-zuul:1.0
+podman push seunghyejeong/edu-msa-zuul:1.0
+
+deployment.apps/edu-msa-comment
+IfNotPresent Always
+
+
+docker pull seunghyejeong/edu-msa-ui:1.0

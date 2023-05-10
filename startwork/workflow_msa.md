@@ -102,24 +102,46 @@ $ helm install jenkins -n jenkins -f jenkins-values.yaml $chart
 - 출력
 
 ```
+ubuntu@ta-bami-cluster-1:~/workspace/dev-tools/kubernetes-jenkins$ helm install jenkins -n jenkins -f jenkins-values.yaml $chart
+W0428 01:01:01.670888  297796 warnings.go:70] would violate PodSecurity "restricted:latest": unrestricted capabilities (containers "init", "jenkins", "config-reload" must set securityContext.capabilities.drop=["ALL"]), seccompProfile (pod or containers "init", "jenkins", "config-reload" must set securityContext.seccompProfile.type to "RuntimeDefault" or "Localhost")
 NAME: jenkins
-LAST DEPLOYED: Wed Sep 16 11:13:10 2020
+LAST DEPLOYED: Fri Apr 28 01:01:01 2023
 NAMESPACE: jenkins
 STATUS: deployed
 REVISION: 1
+NOTES:
+1. Get your 'admin' user password by running:
+  kubectl exec --namespace jenkins -it svc/jenkins -c jenkins -- /bin/cat /run/secrets/additional/chart-admin-password && echo
+2. Get the Jenkins URL to visit by running these commands in the same shell:
+  echo http://127.0.0.1:8080
+  kubectl --namespace jenkins port-forward svc/jenkins 8080:8080
+
+3. Login with the password from step 1 and the username: admin
+4. Configure security realm and authorization strategy
+5. Use Jenkins Configuration as Code by specifying configScripts in your values.yaml file, see documentation: http://127.0.0.1:8080/configuration-as-code and examples: https://github.com/jenkinsci/configuration-as-code-plugin/tree/master/demos
+
+For more information on running Jenkins on Kubernetes, visit:
+https://cloud.google.com/solutions/jenkins-on-container-engine
+
+For more information about Jenkins Configuration as Code, visit:
+https://jenkins.io/projects/jcasc/
+
+
+NOTE: Consider using a custom image with pre-installed plugins
+
 ```
 
 3. admin 비밀번호 
 
 ```
-$ jsonpath="{.data.jenkins-admin-password}"
-$ secret=$(kubectl get secret -n jenkins jenkins -o jsonpath=$jsonpath)
-$ echo $(echo $secret | base64 --decode)
+jsonpath="{.data.jenkins-admin-password}"
+secret=$(kubectl get secret -n jenkins jenkins -o jsonpath=$jsonpath)
+echo $(echo $secret | base64 --decode)
 ```
 
 - 출력 
 
-  TlCHnBc2XbhAgPhAJh4yB8
+  OM3o1Lr41eBOEXBCK0wKnw
 
 4. jenkins URL 
 
@@ -138,6 +160,7 @@ $ echo $(echo $secret | base64 --decode)
 
 
 # jenkins admin User info
+
 
 jeongbami tmdgP0425ab!
 
@@ -251,7 +274,7 @@ argocd login argocd-server-5b69986577-b9k48
       - 출력이 똑같은 것을 확인 할 수 있음.
 
 # argoCD github 연동
-
+git env
 ### git : 
 
 id : jeongbami
@@ -526,7 +549,7 @@ argocd repo add ssh://git@20.200.245.247/jeongbami/msa.git --ssh-private-key-pat
 argocd app create msa-app  --repo git@github.com:jeongbami/msa.git --ssh-private-key-path /home/ubuntu/workspace/ssh-keys/argocd/argocd-github-key-rsa --path path/to/manifests --dest-namespace my-namespace --dest-server https://my-kubernetes-cluster.example.com --sync-policy automated
 
 
-# edu sections manifest 배포 
+# edu sections manifest 배포 환경
 - namespace = edu 공통
 - apply는 app version의 이력을 남기기때문에 manifest 배포시 apply  이용
 - jdk8 / tomcat 9.0.73 
@@ -775,3 +798,1673 @@ allow="127\. \d+\. \d+\. \d+|::1|0:0:0:0:0:0:0:1||{jenkins server IP}"/>
        prefix="localhost_access_log" suffix=".txt"
        pattern="%h %l %u %t &quot;%r&quot; %s %b" 
        condition="remoteHost.matches('127\\..*') || remoteHost.matches('0:0:0:0:0:0:0:1') || remoteHost.matches('10.101.0.145')"/>
+
+
+
+# docker jenkins 설치
+docker network create jenkins
+
+docker run \
+  --name jenkins-docker \
+  --rm \
+  --detach \
+  --privileged \
+  --network jenkins \
+  --network-alias docker \
+  --env DOCKER_TLS_CERTDIR=/certs \
+  --volume jenkins-docker-certs:/certs/client \
+  --volume jenkins-data:/var/jenkins_home \
+  --publish 2376:2376 \
+  docker:dind \
+  --storage-driver overlay2
+
+
+docker run \
+  --name jenkins-docker -d -p 8080:8080 -p 50000:50000 -v /home/jenkins:/var/jenkins_home -u root jenkins/jenkins:lts \
+  --detach \
+  --privileged \
+  --network jenkins \
+  --network-alias docker \
+  --env DOCKER_TLS_CERTDIR=/certs \
+
+
+dockerfile
+
+FROM jenkins/jenkins:2.387.2
+USER root
+RUN apt-get update && apt-get install -y lsb-release
+RUN curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc \
+  https://download.docker.com/linux/debian/gpg
+RUN echo "deb [arch=$(dpkg --print-architecture) \
+  signed-by=/usr/share/keyrings/docker-archive-keyring.asc] \
+  https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+RUN apt-get update && apt-get install -y docker-ce-cli
+USER jenkins
+RUN jenkins-plugin-cli --plugins "blueocean docker-workflow"
+
+docker build -t myjenkins-blueocean:2.387.2-1 .
+
+docker run \
+  --name jenkins-blueocean \
+  --restart=on-failure \
+  --detach \
+  --network jenkins \
+  --env DOCKER_HOST=tcp://docker:2376 \
+  --env DOCKER_CERT_PATH=/certs/client \
+  --env DOCKER_TLS_VERIFY=1 \
+  --publish 8080:8080 \
+  --publish 50000:50000 \
+  --volume jenkins-data:/var/jenkins_home \
+  --volume jenkins-docker-certs:/certs/client:ro \
+  myjenkins-blueocean:2.387.2-1 
+
+
+172.17.0.1
+
+ifconfg
+netstat -tuln | grep 8080 
+docker stop jenkin 
+lsof -i :50000
+
+
+# docker in jenkins 
+https://devbksheen.tistory.com/entry/Jenkins%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%9C-Docker-%EC%BB%A8%ED%85%8C%EC%9D%B4%EB%84%88-%EC%9E%90%EB%8F%99-%EB%B0%B0%ED%8F%AC%ED%95%98%EA%B8%B0Blue-Ocean-NCP
+
+- jenkins 안에 docker를 구축하는 것은 권장하는 방법은 아님
+- jenkins가 설치되어있는 서버의 docker 볼륨과 jenkins 컨테이너 안의 docker 볼륨을 연결해 사용함
+`docker run -d -it -v /var/run/docker.sock:/var/run/docker.sock -p 8090:8080 --name jenkins jenkins/jenkins:lts`
+- 안되면 직접 서버를 설치한다
+  1) ssh {DOCKER_INSTALL_NODE_IP}
+  2) 해당 node에 docker install
+  3) master 계정 접속
+  4) docker exec -it -u root jenkins bash : root권한으로 접속
+  5) chown jenkins:jenkins /var/run/docker.sock
+  ```
+  CONTAINER ID   IMAGE                 COMMAND                  CREATED          STATUS          PORTS                                                  NAMES
+86aa0d5ea8c2   jenkins/jenkins:lts   "/usr/bin/tini -- /u…"   16 minutes ago   Up 16 minutes   50000/tcp, 0.0.0.0:8090->8080/tcp, :::8090->8080/tcp   jenkins
+
+  ```
+---
+
+위의 방법은 docker로 container 설치하는 방법
+1. jenkins가 설치된 node에 docker를 설치해준다.
+2. local(jenkins server)의 /var/run(docker.sock)을 volume mount 해준다
+```yaml (volume-docker.yaml)
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jenkins-pv-volume-docker
+  labels:
+    type: local
+spec:
+  storageClassName: local-storage
+  claimRef:
+    name: jenkins-pv-claim-docker
+    namespace: devops-tools
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  local:
+          path: /var/run
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - ta-bami-cluster-2
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jenkins-pv-claim-docker
+  namespace: devops-tools
+spec:
+  storageClassName: local-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+
+```
+3. deployment를 수정한다 
+  - docker는 root로만 실행할 수 있다.
+  - volume mount를 선언한다.
+  - docker가 설치된 jenkins image로 pull한다.
+```yaml (deployment)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins
+  namespace: devops-tools
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins-server
+  template:
+    metadata:
+      labels:
+        app: jenkins-server
+    spec:
+      securityContext: 
+        runAsUser: 0
+        fsGroup: 0     # root 권한으로 pod를 실행 
+      serviceAccountName: jenkins-admin
+      containers:
+        - name: jenkins
+          image: seunghyejeong/docker-install:2.0 # docker가 설치된 image registry
+          resources:
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+            requests:
+              memory: "500Mi"
+              cpu: "500m"
+          ports:
+            - name: httpport
+              containerPort: 8080
+            - name: jnlpport
+              containerPort: 50000
+          livenessProbe:
+            httpGet:
+              path: "/login"
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: "/login"
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: jenkins-data
+              mountPath: /var/jenkins_home
+            - name: jenkins-docker
+              mountPath: /var/run # docker.sock 있는 directory
+      volumes:
+        - name: jenkins-data
+          persistentVolumeClaim:
+            claimName: jenkins-pv-claim
+        - name: jenkins-docker
+          persistentVolumeClaim:
+            claimName: jenkins-pv-claim-docker 
+
+```
+4. docker ps로 확인해본다
+`k exec -it -n devops-tools jenkins-858cddb78b-mz6zb -- bash`
+
+`docker ps`
+: 이전의 출력 
+```console
+root@jenkins-6746745649-hljzr:~# docker ps
+Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+```
+: 설치 후 출력
+```console
+root@jenkins-858cddb78b-mz6zb:~# docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+```
+
+
+
+# linux jenkins 
+
+- jenkins ui project build
+1) + 새로운 아이템 -> pipeline project 생성
+2) scm pipeline section -> select git
+3) 
+SCM: GIT
+Repository: GIT URL
+Branchs to Build: /main
+script Path: {IF_FOLDER_EXSIST_FOLDERNAME}/Jenkinsfile
+* scriptPath에 "/" 조심. 
+4) apply
+
+
+
+
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee \
+  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt-get update
+sudo apt-get install jenkins
+
+
+sudo apt-get autoremove openjdk-8-jdk
+sudo apt-get purge openjdk-8*
+
+/usr/lib/jvm/java-11-openjdk-amd64
+
+- issue
+```command
+java.io.IOException: Failed to start Jetty
+Caused by: java.io.IOException: Failed to bind to 0.0.0.0/0.0.0.0:8080
+Caused by: java.net.BindException: Address already in usejava.net.BindException: Address already in use
+Caused: java.io.IOException: Failed to bind to 0.0.0.0/0.0.0.0:8080
+```
+: 8080 port를 쓰고있어서 그랬음
+
+```
+Check if there is any other process running on port 8080 using the following command:
+sudo lsof -i :8080
+kill -9 pid
+```
+sudo systemctl daemon-reload
+sudo systemctl start jenkins
+sudo systemctl enable jenkins
+sudo systemctl status jenkins
+
+sudo ufw allow 8080
+sudo ufw status
+
+sudo ufw allow proto tcp from 10.101.0.0/24 to any port 8080
+
+
+
+
+
+10.233.73.1 10.101.0.237 10.101.0.58   10.101.0.145
+
+pod/calico-kube-controllers-75748cc9fd-jk848    1/1     Running   0               10d   10.233.73.1     ta-bami-cluster-2   <none>           <none>
+pod/calico-node-8lj6m                           1/1     Running   0               10d   10.101.0.237    ta-bami-cluster-4   <none>           <none>
+pod/calico-node-cgfw6                           1/1     Running   0               10d   10.101.0.58     ta-bami-cluster-3   <none>           <none>
+pod/calico-node-gqz85                           1/1     Running   0               10d   10.101.0.104    ta-bami-cluster-1   <none>           <none>
+pod/calico-node-jl6n6                           1/1     Running   0               10d   10.101.0.145    ta-bami-cluster-2   <none>           <none>
+
+
+k describe -n kube-system pod/calico-node-jl6n6
+kubectl exec -it pod/jenkins-5498fbb866-sdtj6 -- bash -n devops-tools
+
+kubectl exec -it jenkins-5498fbb866-sdtj6 -- bash cat /var/jenkins_home/secrets/initialAdminPassword -n devops-tools
+
+
+# ci workflow
+Sure, here's a detailed CI workflow with Jenkins and Kubernetes (k8s):
+
+1. Install and configure Jenkins:
+a. Install Jenkins on your Kubernetes cluster.
+b. Install the Kubernetes plugin for Jenkins.
+c. Configure Jenkins to use the Kubernetes plugin for builds.
+
+2. Create a Docker image for your application:
+a. Create a Dockerfile for your application.
+- dockerfile
+```
+FROM tomcat:9.0.73-jdk8-corretto
+
+COPY ./target/edu-msa-ui-1.0.0.war /usr/local/tomcat/webapps/
+
+EXPOSE 8080
+
+CMD ["catalina.sh", "run"]
+```
+b. Build and tag the Docker image.
+```
+docker build -t edu-msa-ui .
+```
+build할 registry에서 실행하기.
+c. Push the Docker image to a container registry.
+```
+docker tag edu-msa-ui seunghyejeong/dockerhubtest:1.0
+docker push seunghyejeong/dockerhubtest:1.0
+
+docker tag edu-msa-ui-v2 seunghyejeong/project_cicd:2.0
+docker push seunghyejeong/project_cicd:2.0
+```
+3. Create a Kubernetes deployment for your application:
+a. Create a Kubernetes deployment YAML file for your application.
+```yaml deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: edu-msa-ui
+  namespace: apps
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: edu-msa-ui
+  template:
+    metadata:
+      labels:
+        app: edu-msa-ui
+    spec:
+      containers:
+      - name: edu-msa-ui
+        image: seunghyejeong/dockerhubtest:1.0
+        ports:
+        - containerPort: 8080
+```
+```yaml service
+apiVersion: v1
+kind: Service
+metadata:
+  name: edu-msa-ui
+  namespace: apps
+spec:
+  selector:
+    app: edu-msa-ui
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+  type: LoadBalancer
+```
+:jenkins와 다른 namespace를 쓰는것이 관리 하는데에 용이
+( jenkins를 다른vm에다 따로 배포하는 이유도 이거인듯.)
+
+b. Set the image name and tag in the deployment YAML file.
+c. Apply the deployment YAML file to your Kubernetes cluster.
+```
+k apply -f 
+```
+
+4. Create a Jenkins pipeline for your application:
+a. Create a Jenkins pipeline that checks out your application code from your version control system.
+```
+node {
+    stage ('clone') {
+        git branch: 'main', url: 'https://github.com/jeongbami/gitops-repository.git'
+    }
+
+    stage ('docker build') {
+         sh ' docker build --tag seunghyejeong/dockerhubtest:1.0 .'
+    }
+    
+    stage ('run docker') {
+         sh ' docker run -d -ti --name jenkins-ci -p 33333:80 sample-ci-httpd'
+    }
+    
+    stage ('check httpd') {
+         sh 'curl -s http://127.0.0.1:33333'
+    }
+    
+    stage ('rm docker') {
+         sh ' docker rm -f jenkins-ci'
+    }
+
+
+```
+
+```
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/seunghyejeong/gitops-repository.git', branch: 'main'
+            }
+        }
+    }
+}
+```
+b. Build the Docker image using the Dockerfile and push it to the container registry.
+```origin
+```origin
+pipeline {
+    agent any
+
+    stages {
+        stage('Build and push Docker image') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'my-docker-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                        def image = docker.build("my-registry-url/my-image-name:my-image-tag")
+                        docker.withRegistry('https://my-registry-url', 'docker-registry-credentials-id') {
+                            image.push()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+```
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/jeongbami/gitops-repository.git', branch: 'main'
+            }
+        }
+        
+        stage('Build and Push Image') {
+            steps {
+                script {
+                    docker.build('seunghyejeong/dockerhubtest:1.0', '-f Dockerfile .')
+                    withCredentials([usernamePassword(credentialsId: 'seunghyejeong', passwordVariable: 'tlqkfak0315!', usernameVariable: 'seunghyejeong')]) {
+                        def image = docker.build("seunghyejeong/dockerhubtest:1.0")
+                        docker.withRegistry('seunghyejeong/dockerhubtest:1.0', 'c3cff267-a1b7-4e04-9234-3903ce4b807b') {
+                            image.push()
+                    }
+                }
+            }
+        }
+        
+       } // Add additional stages for testing and deploying your application
+    }
+    }
+
+```
++ docker build -t seunghyejeong/dockerhubtest:1.0 -f Dockerfil
+e .
+/var/jenkins_home/workspace/test@tmp/durable-412b3278/script.sh: 1: docker: not found
+
+> 아래와 같이 env section add
+```
+pipeline {
+    agent any
+
+   /* environment {
+        DOCKER_HOST = 'tcp://your-docker-host:2376' 다른 vm에서 사용중일때는 host:port
+    }*/
+    environment {
+        DOCKER_HOME = tool 'Docker'
+        PATH = "$DOCKER_HOME/bin:$PATH"
+      }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/jeongbami/gitops-repository.git', branch: 'main'
+            }
+        }
+        
+        stage('Build and Push Image') {
+            steps {
+                script {
+                    docker.build('seunghyejeong/dockerhubtest:1.0', '-f Dockerfile .')
+                    withCredentials([usernamePassword(credentialsId: 'seunghyejeong', passwordVariable: 'tlqkfak0315!', usernameVariable: 'seunghyejeong')]) {
+                        def image = docker.build("seunghyejeong/dockerhubtest:1.0")
+                        docker.withRegistry('seunghyejeong/dockerhubtest:1.0', 'c3cff267-a1b7-4e04-9234-3903ce4b807b') {
+                            image.push()
+                    }
+                }
+            }
+        }
+        
+       } // Add additional stages for testing and deploying your application
+    }
+   }
+```
++ docker credential add
+
+> Dashboard > Jenkins 관리 > Credentials > System > Global credentials (unrestricted)
+add Credetials 'Username with password '
+Give your credentials an ID, such as "docker-registry-credentials"
+저장 후 id 생성 
+
++ :ERROR: No tool named Docker found
+Finished: FAILURE
+> jenkins setting > global configuration > Docker추가 ( Path : /usr/bin/docker)
+
++ docker build -t seunghyejeong/dockerhubtest:1.0 -f Dockerfile .
+/var/jenkins_home/workspace/test@tmp/durable-95a5d835/script.sh: 1: docker: not found
+> 아래와 같이 CLI 추가
+FROM jenkins/jenkins:2.387.2
+USER root
+RUN apt-get update && apt-get install -y lsb-release
+RUN curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc \
+  https://download.docker.com/linux/debian/gpg
+RUN echo "deb [arch=$(dpkg --print-architecture) \
+  signed-by=/usr/share/keyrings/docker-archive-keyring.asc] \
+  https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+RUN apt-get update && apt-get install -y docker-ce-cli
+USER jenkins
+RUN jenkins-plugin-cli --plugins "blueocean docker-workflow"
+```
+pipeline {
+    agent any
+
+    environment {
+        sh "curl -fsSL https://get.docker.com -o get-docker.sh"
+        sh "sh get-docker.sh"
+        DOCKER_HOME = tool 'Docker'
+        PATH = "$DOCKER_HOME/bin:$PATH"
+      }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/jeongbami/gitops-repository.git', branch: 'main'
+            }
+        }
+        
+        stage('Build and Push Image') {
+            steps {
+                script {
+                    docker.build('seunghyejeong/dockerhubtest:1.0', '-f Dockerfile .')
+                    withCredentials([usernamePassword(credentialsId: 'seunghyejeong', passwordVariable: 'tlqkfak0315!', usernameVariable: 'seunghyejeong')]) {
+                        def image = docker.build("seunghyejeong/dockerhubtest:1.0")
+                        docker.withRegistry('seunghyejeong/dockerhubtest:1.0', 'c3cff267-a1b7-4e04-9234-3903ce4b807b') {
+                            image.push()
+                    }
+                }
+            }
+        }
+        
+       } // Add additional stages for testing and deploying your application
+    }
+   }
+```
++ WorkflowScript: 5: "sh "curl -fsSL https://get.docker.com -o get-docker.sh"" is not a valid environment expression. Use "key = value" pairs with valid Java/shell keys. @ line 5, column 9.
+           sh "curl -fsSL https://get.docker.com -o get-docker.sh"
+           ^
+
+WorkflowScript: 6: "sh "sh get-docker.sh"" is not a valid environment expression. Use "key = value" pairs with valid Java/shell keys. @ line 6, column 9.
+           sh "sh get-docker.sh"
+           ^
+
+WorkflowScript: 4: Expected name=value pairs @ line 4, column 5.
+       environment {
+       ^
+
+3 errors
+
+> Install Docker 단계를 넣어줌
+```
+pipeline {
+    agent any
+
+        docker {
+            image 'docker:latest'
+            reuseNode true
+        }
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/jeongbami/gitops-repository.git', branch: 'main'
+            }
+        }
+     stage('Install Docker') {
+            steps {
+                sh "curl -fsSL https://get.docker.com -o get-docker.sh"
+                sh "sh get-docker.sh"
+                echo "docker installed"
+            }
+        }
+        
+      stage('Build and Push Image') {
+            steps {
+                script {
+                    docker.build('seunghyejeong/dockerhubtest:1.0', '-f Dockerfile .')
+                    withCredentials([usernamePassword(credentialsId: 'seunghyejeong', passwordVariable: 'tlqkfak0315!', usernameVariable: 'seunghyejeong')]) {
+                        def image = docker.build("seunghyejeong/dockerhubtest:1.0")
+                        docker.withRegistry('seunghyejeong/dockerhubtest:1.0', 'c3cff267-a1b7-4e04-9234-3903ce4b807b') {
+                            image.push()
+                    }
+                }
+            }
+        }
+        
+       } // Add additional stages for testing and deploying your application
+    }
+   }
+```
++ pod 안에서 sudo를 실행 할 수 없음
+> docker {}로 image build된걸 pull
+```
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_HOME = tool 'Docker'
+        PATH = "$DOCKER_HOME/bin:$PATH"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/jeongbami/gitops-repository.git', branch: 'main'
+            }
+        }
+     stage('Install Docker') {
+            steps {
+                sh "curl -fsSL https://get.docker.com -o get-docker.sh"
+                sh "sh get-docker.sh"
+                echo "docker installed"
+            }
+        }
+        
+      stage('Build and Push Image') {
+            steps {
+                script {
+                    docker.build('seunghyejeong/dockerhubtest:1.0', '-f Dockerfile .')
+                    withCredentials([usernamePassword(credentialsId: 'seunghyejeong', passwordVariable: 'tlqkfak0315!', usernameVariable: 'seunghyejeong')]) {
+                        def image = docker.build("seunghyejeong/dockerhubtest:1.0")
+                        docker.withRegistry('seunghyejeong/dockerhubtest:1.0', 'c3cff267-a1b7-4e04-9234-3903ce4b807b') {
+                            image.push()
+                    }
+                }
+            }
+        }
+        
+       } // Add additional stages for testing and deploying your application
+    }
+   }
+```
+: 안되자너 ㅋ
+```
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/jeongbami/gitops-repository.git', branch: 'main'
+            }
+        }
+        
+      stage('Build and Push Image') {
+            steps {
+                script {
+                    docker.build('seunghyejeong/dockerhubtest:1.0', '-f Dockerfile .')
+                    withCredentials([usernamePassword(credentialsId: 'seunghyejeong', passwordVariable: 'tlqkfak0315!', usernameVariable: 'seunghyejeong')]) {
+                        def image = docker.build("seunghyejeong/dockerhubtest:1.0")
+                    docker.withRegistry('https://dockerhub.com', 'seunghyejeong') {
+                        image.push()
+                    }
+                    }
+                }
+            }
+        }
+        }
+       } 
+}
+```
+configuer docker file 도커파일로 설치된 이미지 다시 푸시
+```
+FROM maven:3.6.0-jdk-8-slim
+WORKDIR /home/ubuntu/workspace/practice-gitops/gitops-repository/edu-msa-ui-master
+COPY pom.xml .
+RUN mvn dependency:go-offline
+COPY src ./src
+RUN mvn package
+EXPOSE 8080
+CMD ["java", "-jar", "./target/edu-msa-ui-1.0.0.war"]
+```
+```origin
+
+FROM maven:3.8-jdk-11
+RUN mkdir /project
+COPY . /project
+WORKDIR /project
+RUN mvn clean package -DskipTests
+CMD ["java", "-jar", "target/demo-0.0.1-SNAPSHOT.jar"]
+
+```
+```
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/jeongbami/gitops-repository.git', branch: 'main'
+            }
+        }
+        
+        stage('Build and Push Image') {
+            steps {
+                script {
+                    docker.build('seunghyejeong/project_cicd:2.0', '-f Dockerfile .')
+                    withCredentials([usernamePassword(credentialsId: 'seunghyejeong', passwordVariable: 'tlqkfak0315!', usernameVariable: 'seunghyejeong')]) {
+                        def image = docker.build("sseunghyejeong/project_cicd:2.0")
+                        docker.withRegistry('seunghyejeong/project_cicd:2.0', 'seunghyejeong') {
+                            image.push()
+                    }
+                }
+            }
+        }
+        
+       } // Add additional stages for testing and deploying your application
+    }
+   
+ }
+ ```
+ ``` app build, docker image build, sync git  repo 
+
+pipeline {
+  agent any
+  
+  environment {
+    APP_NAME = 'edu-msa-ui'
+    IMAGE_NAME = 'seunghyejeong/project_cicd:2.0'
+    GIT_REPO = 'https://github.com/jeongbami/gitops-repository.git'
+  }
+  
+  stages {
+      stage('Checkout') {
+      steps {
+          git url: 'https://github.com/jeongbami/gitops-repository.git', branch: 'main'
+      }
+    }
+    
+    stage('Build') {
+      steps {
+        sh '''
+          cd $APP_NAME
+          mvn clean package
+        '''
+      }
+    }
+    
+        stage('Build and Push Image') {
+            steps {
+                script {
+                    docker.build('seunghyejeong/project_cicd:2.0', '-f Dockerfile .')
+                    withCredentials([usernamePassword(credentialsId: 'seunghyejeong', passwordVariable: 'tlqkfak0315!', usernameVariable: 'seunghyejeong')]) {
+                        def image = docker.build("seunghyejeong/project_cicd:2.0")
+                        docker.withRegistry('seunghyejeong/project_cicd:2.0', 'seunghyejeong') {
+                            image.push()
+                    }
+                }
+            }
+        }
+        
+       } 
+    
+    stage('Update Git Repo') {
+      steps {
+        git branch: 'main', url: "$GIT_REPO"
+        sh '''
+          cd edu-msa-ui
+          rm -rf target/
+          cp ../target/*.war webapps/
+          git add webapps/*.war
+          git commit -m "Update webapp"
+          git push origin main
+        '''
+      }
+    }
+  }
+}
+```
+
+# container에 docker 설치
+k exec -it -n devops-tools jenkins-7d945fbd9b-phdrr -- bash
+```install.sh
+#!/bin/bash
+set -e
+
+# Download Docker binary
+curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-20.10.11.tgz -o docker.tgz
+tar xzf docker.tgz
+
+# Move Docker binary to /usr/bin
+mv docker/* /usr/bin/
+rm -rf docker*
+
+# Create Docker service
+mkdir -p /etc/systemd/system/docker.service.d/
+echo '[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock' > /etc/systemd/system/docker.service.d/override.conf
+systemctl daemon-reload
+systemctl enable docker.service
+systemctl start docker.service
+```
+
+```configmap
+spec:
+  template:
+    spec:
+      volumes:
+      - name: docker-install-script
+        configMap:
+          name: docker-install-script
+      containers:
+      - name: jenkins
+        volumeMounts:
+        - name: docker-install-script
+          mountPath: /usr/share/jenkins/ref/docker-install.sh
+          subPath: docker-install.sh
+        securityContext:
+          privileged: true
+
+```
+```deployment.yaml -ori
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins
+  namespace: devops-tools
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins-server
+  template:
+    metadata:
+      labels:
+        app: jenkins-server
+    spec:
+      securityContext:
+            fsGroup: 1000 
+            runAsUser: 1000
+      serviceAccountName: jenkins-admin
+      containers:
+        - name: jenkins
+          image: jenkins/jenkins:lts
+          resources:
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+            requests:
+              memory: "500Mi"
+              cpu: "500m"
+          ports:
+            - name: httpport
+              containerPort: 8080
+            - name: jnlpport
+              containerPort: 50000
+          livenessProbe:
+            httpGet:
+              path: "/login"
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: "/login"
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: jenkins-data
+              mountPath: /var/jenkins_home         
+      volumes:
+        - name: jenkins-data
+          persistentVolumeClaim:
+              claimName: jenkins-pv-claim
+```
+
+```docker build dockrfile
+FROM jenkins/jenkins:2.387.2
+USER root
+RUN apt-get update && apt-get install -y lsb-release
+RUN curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc \
+  https://download.docker.com/linux/debian/gpg
+RUN echo "deb [arch=$(dpkg --print-architecture) \
+  signed-by=/usr/share/keyrings/docker-archive-keyring.asc] \
+  https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+RUN apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io
+RUN service docker start
+USER jenkins
+```
+```
+docker build -t docker-install .
+docker tag docker-install seunghyejeong/docker-install:2.1
+docker push seunghyejeong/docker-install:2.1
+```
+```deployment.yaml : docker in jenkis를 image download
+      containers:
+        - name: jenkins
+          image: seunghyejeong/docker-install:2.1
+          resources:
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+            requests:
+              memory: "500Mi"
+              cpu: "500m"
+```
+```pipeline
+pipeline {
+    agent 
+    environment {
+        GIT_REPO = 'https://github.com/jeongbami/gitops-repository.git'
+    }
+    docker {
+        image 'maven:3.9.0-eclipse-temurin-11'
+        args '-v /root/.m2:/root/.m2'
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/jeongbami/gitops-repository.git', branch: 'main'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'mvn -B -DskipTests clean package'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        post {
+            always {
+                junit 'target/surefire-reports/*.xml'
+            }
+        }
+        stage('Update Git Repo') {
+            steps {
+                git branch: 'main', url: "$GIT_REPO"
+                sh '''
+                    cd edu-msa-ui
+                    git add .
+                    git commit -m "Update webapp $DATE"
+                    git push origin main
+                '''
+            }
+        }
+    }
+}
+
+```
+```edit?
+pipeline {
+    agent any
+    environment {
+        GIT_REPO = 'https://github.com/jeongbami/gitops-repository.git'
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/jeongbami/gitops-repository.git', branch: 'main'
+            }
+        }
+        stage('Build') {
+            steps {
+                docker {
+                    image 'maven:3.9.0-eclipse-temurin-11'
+                    args '-v /root/.m2:/root/.m2'
+                    sh 'mvn -B -DskipTests clean package'
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                docker {
+                    image 'maven:3.9.0-eclipse-temurin-11'
+                    args '-v /root/.m2:/root/.m2'
+                    sh 'mvn test'
+                }
+            }
+        }
+        stage('Update Git Repo') {
+            steps {
+                git branch: 'main', url: "$GIT_REPO"
+                sh '''
+                    cd edu-msa-ui
+                    git add .
+                    git commit -m "Update webapp $DATE"
+                    git push origin main
+                '''
+            }
+        }
+        post {
+            always {
+                junit 'target/surefire-reports/*.xml'
+            }
+        }
+    }
+}
+
+```
+
+k exec -it -n devops-tools jenkins-7d945fbd9b-phdrr -- bash
+
+```자꾸 syntax관련 에러가 나서 처음부터 차근차근 
+pipeline {
+    agent any
+    enviroment {
+      DOCKER_IMAGE = 'project:latest'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/jeongbami/gitops-repository.git', branch: 'main'
+            }
+        }
+        
+        stage('Build and Push Image') {
+            steps {
+                script {
+                    docker.build('seunghyejeong/build-maven:1.0', '-f Dockerfile .')
+                    withCredentials([usernamePassword(credentialsId: 'seunghyejeong', passwordVariable: 'tlqkfak0315!', usernameVariable: 'seunghyejeong')]) {
+                        def image = docker.build("seunghyejeong/build-maven:1.0")
+                        docker.withRegistry('seunghyejeong/build-maven:1.0', 'seunghyejeong') {
+                            image.push()
+                    }
+                }
+            }
+        }
+        
+       } // Add additional stages for testing and deploying your application
+    }
+ }
+```
+```docker socket이 없어 host의 volume에 마운트해줌 
+FROM jenkins/jenkins:2.387.2
+USER root
+RUN apt-get update && apt-get install -y lsb-release
+RUN curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc \
+  https://download.docker.com/linux/debian/gpg
+RUN echo "deb [arch=$(dpkg --print-architecture) \
+  signed-by=/usr/share/keyrings/docker-archive-keyring.asc] \
+  https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+RUN apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io
+RUN service docker start
+RUN usermod -aG docker jenkins
+USER jenkins
+
+# Mount host's Docker socket inside container
+VOLUME /var/run/docker.sock
+```
+k exec -it -n devops-tools jenkins-7c5c4ff449-wzv6x -- bash
+```dockerfile for make image
+FROM maven:3.6.0-jdk-8-slim
+WORKDIR /home/ubuntu/workspace/practice-gitops/gitops-repository/edu-msa-ui-master
+COPY pom.xml .
+RUN mvn dependency:go-offline
+COPY src ./src
+RUN mvn clean package -DskipTests
+FROM openjdk:8-jre-slim
+RUN mvn package
+EXPOSE 8080
+CMD ["java", "-jar", "./target/edu-msa-ui-1.0.0.war"]
+```
+```#0 0.322 /bin/sh: 1: mvn: not found
+FROM maven:3.6.0-jdk-8-slim
+WORKDIR /home/ubuntu/workspace/practice-gitops/gitops-repository/edu-msa-ui-master
+COPY pom.xml .
+RUN mvn dependency:go-offline
+COPY src ./src
+RUN mvn clean package -DskipTests && \
+    mkdir -p target && \
+    cp target/edu-msa-ui-1.0.0.war target/ROOT.war
+
+FROM openjdk:8-jre-slim
+WORKDIR /usr/local/tomcat/webapps/
+COPY --from=0 /home/ubuntu/workspace/practice-gitops/gitops-repository/edu-msa-ui-master/target/ROOT.war .
+EXPOSE 8080
+CMD ["catalina.sh", "run"]
+``` 
+docker build -t build-maven .
+docker tag build-maven seunghyejeong/build-maven:1.1
+docker push seunghyejeong/build-maven:1.1
+
+```
+pipeline {
+  agent any
+  
+  environment {
+    VERSION = "1.0.${BUILD_NUMBER}"
+    DOCKER_IMAGE = "project:$VERSION"
+  }
+
+  stages {
+    stage('Checkout') {
+        steps {
+            git url: 'https://github.com/jeongbami/gitops-repository.git', branch: 'main'
+        }
+    }
+
+    stage('Build') {
+      steps {
+        sh 'mvn clean install'
+      }
+    }
+
+    stage('Build Docker Image') {
+      steps {
+        sh 'docker build -t $DOCKER_IMAGE .'
+      }
+    }
+
+    stage('Push Docker Image') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+          sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+        }
+        sh "docker tag $DOCKER_IMAGE seunghyejeong/project:$VERSION"
+        sh "docker push $DOCKER_IMAGE"
+      }
+    }
+
+    stage('Deploy') {
+      steps {
+        script {
+          def argocd_server = 'my-argocd-server'
+          def argocd_token = credentials('argocd-token')
+          def application_name = 'my-app'
+          def environment_name = 'production'
+
+          sh "argocd login $argocd_server --insecure --grpc-web --username admin --password $argocd_token"
+          sh "argocd app create $application_name --repo https://github.com/my-repo --path kubernetes --dest-server https://my-kubernetes-cluster --dest-namespace my-namespace"
+          sh "argocd app sync $application_name --sync-policy automated --prune --namespace $environment_name"
+        }
+      }
+    }
+  }
+}
+```
+```mvn 찾을수없어
+FROM maven:3.6.0-jdk-8-slim as builder
+WORKDIR /home/ubuntu/workspace/practice-gitops/gitops-repository/edu-msa-ui-master
+COPY pom.xml .
+RUN mvn dependency:go-offline
+COPY src ./src
+RUN mvn clean package -DskipTests && \
+    mkdir -p target && \
+    cp target/edu-msa-ui-1.0.0.war target/ROOT.war
+
+FROM openjdk:8-jre-slim
+RUN apt-get update && apt-get install -y maven
+WORKDIR /usr/local/tomcat/webapps/
+COPY --from=builder /home/ubuntu/workspace/practice-gitops/gitops-repository/edu-msa-ui-master/target/ROOT.war .
+EXPOSE 8080
+CMD ["catalina.sh", "run"]
+```
+```
+def version = '1.0'
+version = String.format("%.1f", (version as Double) + 0.1)
+
+pipeline {
+  agent any
+
+  stages {
+    stage('Checkout') {
+      steps {
+        git url: 'https://github.com/jeongbami/gitops-repository.git', branch: 'main'
+      }
+    }
+
+    stage('Build Docker Image') {
+      steps {
+            try {
+                docker.build('seunghyejeong/build-maven:1.1', '-f Dockerfile .')
+                withCredentials([usernamePassword(credentialsId: 'seunghyejeong', passwordVariable: 'tlqkfak0315!', usernameVariable: 'seunghyejeong')]) {
+                    def image = docker.build("seunghyejeong/project:${version}")
+                    docker.withRegistry('https://index.docker.io/v1/', 'seunghyejeong') {
+                        image.push()
+                    }
+                }
+            } catch (Exception ex) {
+                println "Error: ${ex.getMessage()}"
+                currentBuild.result = 'FAILURE'
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+docker build -t dockerfile-tomcat .
+docker tag dockerfile-tomcat seunghyejeong/dockerfilefortomcat:1.0
+docker push seunghyejeong/dockerfilefortomcat:1.0
+```
+
+FROM tomcat:9-jre8-alpine
+WORKDIR /usr/local/tomcat
+COPY server.xml ./conf
+RUN rm -rf ./webapps/*
+ARG JAR_FILE=*.war
+COPY ${JAR_FILE} ./webapps/edu-msa-ui-1.0.0.war
+
+```
+```
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout Git repository') {
+            steps {
+                git url: 'https://github.com/jeongbami/gitops-repository.git', branch: 'main'
+            }
+        }
+        stage('Build Docker image') {
+            steps {
+                sh 'docker build -t seunghyejeong/project:latest .'
+            }
+        }
+
+        stage('Log in to Docker registry') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'seunghyejeong', passwordVariable: 'tlqkfak0315!', usernameVariable: 'seunghyejeong')]) {
+
+                        sh 'docker login -u seunghyejeong -p tlqkfak0315 seunghyejeong'
+                    
+                }
+            }
+        }
+        stage('Push Docker image to registry') {
+            steps {
+                sh 'docker push seunghyejeong/project:latest'
+            }
+        }
+
+        stage('CI with Maven') {
+            steps {
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('Run Java application') {
+            steps {
+                sh 'java -jar myapp.jar'
+            }
+        }
+
+        stage('Git push') {
+            steps {
+                sh 'git add . && git commit -m "Update" && git push'
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
+```
+```
+pipeline {
+  agent any
+
+  tools {
+    maven 'maven' 
+  }
+  stages {
+
+    stage('Checkout Application Git Branch') {
+      steps {
+        git url: 'https://github.com/seunghyejeong/gitops-repository.git', branch: 'main'
+      }
+      post {
+        failure {
+          echo 'Failed to clone repository'
+        }
+        success {
+          echo 'Repository cloned successfully'
+        }
+      }
+    }
+    stage('Maven Jar Build') {
+      steps {
+        sh 'mvn -f /var/jenkins_home/workspace/msa-project/edu-msa-ui-master/pom.xml clean package'
+      }
+      post {
+        failure {
+          echo 'Failed to build Maven'
+        }
+        success {
+          echo 'Maven war built successfully!'
+        }
+      }
+    }
+    stage('ready to docker build'){
+      steps {
+        dir('msa-project/edu-msa-ui-master')
+        sh 'cp ./target/*.war ../edu-msa-file-master/Docker/edu-msa-ui-msater/'
+      }
+    }
+    stage('Docker Login'){
+      steps{
+        withCredentials([usernamePassword(credentialsId: 'seunghyejeong', passwordVariable: 'tlqkfak0315!', usernameVariable: 'seunghyejeong')]) {
+
+          sh 'docker login -u seunghyejeong -p tlqkfak0315 seunghyejeong'
+        }   
+      }
+    }
+    stage('Deploy our image') { 
+      steps { 
+        script {
+          dir('msa-project/edu-msa-file-master/Docker/edu-msa-ui')
+          sh 'docker build -t edu-msa-ui .' 
+          sh 'docker tag edu-msa-ui seunghyejeong/edu-msa-ui:$BUILD_NUMBER' 
+          sh 'docker push seunghyejeong/project:$BUILD_NUMBER' 
+        } 
+      }
+    } 
+  }
+}
+
+```
+```
+ pipeline { 
+    environment { 
+        repository = "seunghyejeong/project"  //docker hub id와 repository 이름
+        dockerImage = '' 
+  }
+  agent any 
+stages {
+    stage('Building our image') {
+        steps {
+            script {
+                dir('/home/ubuntu/workspace/practice-gitops/gitops-repository/edu-msa-ui-master') {
+                    dockerImage = docker.build repository + ":$BUILD_NUMBER"
+                }
+            }
+        }
+    }      stage('Login'){
+          steps{
+                withCredentials([usernamePassword(credentialsId: 'seunghyejeong', passwordVariable: 'tlqkfak0315!', usernameVariable: 'seunghyejeong')]) {
+
+                        sh 'docker login -u seunghyejeong -p tlqkfak0315 seunghyejeong'
+                 }   
+          }
+      }
+      stage('Deploy our image') { 
+          steps { 
+              script {
+                sh 'docker push $repository:$BUILD_NUMBER' //docker push
+              } 
+          }
+      } 
+      stage('Cleaning up') { 
+      steps { 
+              sh "docker rmi $repository:$BUILD_NUMBER" // docker image 제거
+          }
+      } 
+  }
+}
+```
+
+---
+
+Q: Jenkins pod deployed as k8s what  I write the path in Jenkinsfile or Dockerfile to prgress someting as pipeline? the path  in jenkins pod or local path?
+
+A: 
+When working with Jenkins running as a Kubernetes pod, the paths in your Jenkinsfile and Dockerfile should typically be defined relative to the workspace within the Jenkins pod.
+
+In your Jenkinsfile, you can refer to files or directories using relative paths from the workspace. For example, if you have a script named "build.sh" in the root of your workspace, you can execute it using the following syntax:
+```groovy
+stage('Build') {
+  steps {
+    sh './build.sh'
+  }
+}
+```
+Here, the sh step runs the "build.sh" script located in the workspace directory.
+
+Similarly, when writing a Dockerfile, you can COPY or ADD files from the workspace into the Docker image using relative paths. For example:
+```Dockerfile
+COPY ./app.jar /app/app.jar
+```
+In this case, the "app.jar" file located in the workspace's root directory will be copied to the "/app/app.jar" path inside the Docker image.
+
+It's important to note that when you run Jenkins as a Kubernetes pod, the workspace is a directory within the pod's file system where Jenkins executes your pipeline. Therefore, any file references in your Jenkinsfile or Dockerfile should be relative to the workspace directory within the pod.
+
+Q: then "." path is /home/root ?
+A: 
+No, the "." (dot) path refers to the current directory within the workspace of the Jenkins pod, not the /home/root directory.
+
+The workspace directory is a specific directory within the Jenkins pod where Jenkins creates a clone of your source code repository and executes your pipeline. The exact location of the workspace directory may vary depending on how Jenkins is configured, but it is typically located at /var/jenkins_home/workspace/<pipeline-name>.
+
+When you use a relative path like "./build.sh" in your Jenkinsfile or Dockerfile, it will be resolved relative to the workspace directory. So, if the "build.sh" script is located in the root directory of the workspace, using "./build.sh" will correctly reference that script.
+
+To summarize, in the context of a Jenkins pod running as a Kubernetes deployment, the "." path refers to the current directory within the workspace, not the /home/root directory.
+
+
+Q:Then if I get a git clone from one folder and try to work on the docker image with the cloned file in the two folder, which folder should I write the name of?
+A:
+
+If you have cloned a Git repository into a specific folder within your Jenkins workspace and want to reference that folder in both your Jenkinsfile and Dockerfile, you should use the path relative to the workspace.
+
+Let's say you have a Jenkins workspace at /var/jenkins_home/workspace/my-pipeline, and you have cloned the Git repository into a subfolder named my-app within the workspace. The directory structure would look like this:
+
+```perl
+/var/jenkins_home/workspace/my-pipeline/
+  |- my-app/
+      |- Dockerfile
+      |- ... (other files and directories)
+```
+
+In this case, to reference the my-app folder in both your Jenkinsfile and Dockerfile, you would use the path my-app. Here's an example:
+
+Jenkinsfile:
+
+```groovy
+stage('Build') {
+  steps {
+    dir('my-app') {
+      sh 'docker build -t my-app-image .'
+    }
+  }
+}
+```
+Dockerfile:
+```Dockerfile
+Copy code
+COPY my-app /app
+```
+
+In the Jenkinsfile, the dir('my-app') block changes the current working directory to my-app, and the subsequent sh step executes the Docker build command from that directory. Similarly, in the Dockerfile, the COPY instruction copies the contents of the my-app directory into the /app directory inside the Docker image.
+
+By using the relative path my-app, you ensure that the correct folder is referenced regardless of the workspace's location within the Jenkins pod.
+
+
+/var/jenkins_home/workspace/msa-project/edu-msa-file-master/Docker/edu-msa-ui
+/var/jenkins_home/workspace/msa-project/msa-project/edu-msa-file-master/Docker/edu-msa-ui
+
+
+```
+pipeline {
+  agent any
+
+  tools{
+  maven 'maven' 
+  //devTools 'Docker'
+  }
+
+stages {
+stage('Checkout Application Git Branch') {
+steps {
+git url: 'https://github.com/seunghyejeong/gitops-repository.git', branch: 'main'
+}        
+post {
+failure {
+echo 'Failed to clone repository'
+}
+success {
+echo 'Repository cloned successfully'
+}
+}
+}
+
+stage('Maven Jar Build') {
+steps {
+sh 'mvn -f /var/jenkins_home/workspace/msa-project/edu-msa-ui-master/pom.xml clean package'
+}
+post {
+failure {
+echo 'Failed to build Maven'
+}
+success {
+echo 'Maven war built successfully!'
+}
+}
+}
+
+stage('ready to docker build'){
+steps {
+//dir('msa-project/edu-msa-ui-master'){
+//sh 'cp ./target/*.war ../edu-msa-file-master/Docker/edu-msa-ui-msater/'
+sh 'cp /var/jenkins_home/workspace/msa-project/edu-msa-ui-master/target/*.war /var/jenkins_home/workspace/msa-project/edu-msa-file-master/
+'
+//}
+}
+}
+
+stage('Docker Login'){
+steps{
+withCredentials([usernamePassword(credentialsId: 'docker-token', passwordVariable: 'tlqkfak0315!', usernameVariable: 'seunghyejeong')]) {
+sh 'docker login -u seunghyejeong -p tlqkfak0315!'
+}   
+}
+}
+
+stage('Deploy our image') { 
+steps { 
+script {
+// dir(' /var/jenkins_home/workspace/msa-project/edu-msa-file-master/Docker/'){
+// sh 'docker build -t edu-msa-ui-master .' 
+// sh 'docker tag edu-msa-ui-master seunghyejeong/edu-msa-ui-master:$BUILD_NUMBER' 
+// sh 'docker push seunghyejeong/edu-msa-ui-master:$BUILD_NUMBER' 
+    sh 'cd /var/jenkins_home/workspace/msa-project/edu-msa-file-master/Docker && docker build -t edu-msa-ui-master .'
+    sh 'docker tag edu-msa-ui-master seunghyejeong/edu-msa-ui-master:$BUILD_NUMBER'
+    sh 'docker push seunghyejeong/edu-msa-ui-master:$BUILD_NUMBER'
+} 
+}
+}
+
+}
+}
+```
+```# Start with a base image containing Tomcat server running with JRE8
+FROM tomcat:9-jre8 AS build
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Copy the pom.xml and src directories to the container
+COPY pom.xml .
+COPY src ./src
+
+# Build the application with Maven
+
+# Start with a base image containing Tomcat server running with JRE8
+FROM tomcat:9-jre8-alpine
+
+# Set the working directory to /usr/local/tomcat
+WORKDIR /usr/local/tomcat
+
+# Copy the custom server.xml file to the container
+COPY server.xml ./conf
+
+# Remove any existing files in the webapps directory of Tomcat
+RUN rm -rf ./webapps/*
+
+# Copy the WAR file generated by Maven into the webapps directory of Tomcat
+ARG JAR_FILE=*.war
+COPY --from=build /app/target/${JAR_FILE} ./webapps/edu-msa-ui-1.0.0.war # app/target은 위의 #Build the application with Maven이 실행 되어야 함.
+
+# Expose the port the application will listen on
+EXPOSE 8080
+
+# Start the Tomcat server
+CMD ["catalina.sh", "run"]
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+c. Deploy the new version of the application to Kubernetes by applying the deployment 
+YAML file.
+>
+```
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/my-org/my-repo.git']]])
+            }
+        }
+        
+        stage('Build and Push Image') {
+            steps {
+                script {
+                    docker.build('seunghyejeong/dockerhubtest:1.0', '-f Dockerfile .')
+                    withCredentials([usernamePassword(credentialsId: 'seunghyejeong', passwordVariable: 'tlqkfak0315!', usernameVariable: 'seunghyejeong')]) {
+                        def image = docker.build("seunghyejeong/dockerhubtest:1.0")
+                        docker.withRegistry('seunghyejeong/dockerhubtest:1.0', 'c3cff267-a1b7-4e04-9234-3903ce4b807b') {
+                            image.push()
+                    }
+                }
+            }
+        }
+        
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh 'kubectl apply -f /path/to/deployment.yaml'
+            }
+        }
+    }
+}
+```
+
+5. Configure Jenkins to trigger the pipeline on code changes:
+a. Set up a webhook in your version control system that triggers the Jenkins pipeline on code changes.
+b. Configure Jenkins to use Kubernetes pods as build agents for the pipeline.
+c. Configure the pipeline to trigger only on code changes to specific branches or tags.
+
+6. Add testing to the pipeline:
+a. Add unit tests to the pipeline.
+b. Add integration tests to the pipeline.
+c. Configure the pipeline to fail if any tests fail.
+
+7. Add quality checks to the pipeline:
+a. Add code linting to the pipeline.
+b. Add security scanning to the pipeline.
+c. Configure the pipeline to fail if any quality checks fail.
+
+8. Add deployment verification to the pipeline:
+a. Add smoke tests to the pipeline to verify that the new version of the application is running correctly.
+b. Configure the pipeline to roll back the deployment if the smoke tests fail.
+
+8. Monitor the pipeline:
+a. Set up alerts to notify you if the pipeline fails.
+b. Monitor the pipeline metrics, such as build time and success rate.
+c. Continuously improve the pipeline based on the metrics and feedback from users.
+
+This is a high-level overview of a CI workflow with Jenkins and Kubernetes. Depending on your specific application and requirements, you may need to add or modify some steps.

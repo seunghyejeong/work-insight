@@ -705,5 +705,145 @@ CV-RS-2022-034_파스-타 호환성 검증 시나리오 결과서_유니닥스
 # 230425
 1. argocd 진행중
 
-# 230325
+# 230426
 
+# 230427
+1. 호환성
+- 씨앤에프시스템: 대표포탈등재 및 확인서 전달 
+
+# 230428
+1. sub-task
+	jenkins: git clone
+
+
+# 3230502
+1. sub-task
+	jenkins: docker in jenkins 
+2. open-lab
+- 사이드카 Portal 설치
+- UI상에서 login, Sample app 배포, tail-log 테스트 수행
+	:: org: portal / space: system
+	:: admin/user login 이상 없음
+	:: portal-app 배포 완료
+	:: sample-app 진행중 issue 발생
+
+
+
+[info]	
++ NHN 고려대학교
+https://paasta.console.nhncloud.com
+- admin 계정
+admin
+b2s8ti1v87k1kcnvqqz6
+- cf 학생 계정
+korea_trainee01
+trainee01
+
++ cf login 
+cf login -a api.openlab-04.kr --skip-ssl-validation -u admin -p b2s8ti1v87k1kcnvqqz6
++ 운영자
+id: admin
+pw: b2s8ti1v87k1kcnvqqz6
+http://portal-web-admin.apps.openlab-04.kr/index
++ user	
+id: korea_trainee01 
+pw: trainee01
+http://portal-web-user.apps.openlab-04.kr
+---
+
+
+- issue
+1. web-admin page에서 서비스 추가 후 web-user에서 사용시 ui가 다음창으로 넘어가지 않음.
+	(template, service ..)
+
+# 230503
+1. 호환성
+	- 나무기술: 사전 협의 회의
+2. sub-task
+	- pipleline: 진행중 
+
+
+# 230508
+
+1. 오픈랩
+- 한국공학대 - mysql 서비스 생성 
+	1) public ip 부여할 수 있는지 체크 
+		- 133.186.143.244
+	2) network 방화벽 해제 체크해보기
+	3) mysql 접속 test
+		- 용량:  default m2.c8m16(vCPU:8, RAM: 16GB)
+		- HA구성: 안함
+		- HDD 200GB
+		- floating ip 사용
+		: cpu 사용량 초과로 db생성 실패
+		: 용량 추가 후 재생성 (ubuntu Server 20.04.6 LTS with MySQL 8.0.27 (2023.03.21)
+		- user / pw / default db 생성
+		- user:paasta-admin
+		- pw: paasta2023!
+		- db name: paasta-mysql
+	4) pem-key
+		- mysql-kpu-key
+- 접속정보를 정리 후 메일로 전달 후 내용 확인 카톡 전달.
+
+
+yklee2002@gmail.com
+
+안녕하세요 교수님
+개방형 클라우드 플랫폼 센터 정승혜 전임입니다.
+
+2023년 5월 8일 요청하신 MySQL service설치가 완료되어 내용 공유 드립니다.
+
+---
+# MySQL DB
+- instance name: mysql-kpu
+- version: 8.0.27
+- ip: 133.186.134.72
+- port: 3306
+- pem: mysql-kpu-key
+- userid: paasta-admin
+- userpw: paasta2023!
+- DB name: paastadb
+- login commandLine:
+	mysql -u paasta-admin -h 133.186.143.244 -p
+---
+
+- command: -> mysql user 입장으로 (ssh는 관리자가 원격 접속하는 정보)
+
+
+
+감사합니다.
+
+안녕하세요 교수님 정승혜 전임입니다.
+요청하신 MySQL service 설치가 완료되었습니다.
+해당 내용 메일로 발송하였으니 확인 부탁드립니다.
+
+감사합니다.
+
+
+# 230509
+1. sub-task
+- jenkins: Dockerfile 실행 진행중
+2. 전문가 교육 실습 test
+
+
+# 230510
+1. 전문가 교육 실습 test 
+: 진행 완료 및 자료 공유 완료
+2. sub-task
+: CI(jenkins) docker build 및 push 완료
+
+
+cd ~/edu-msa-file/Docker/edu-msa-user/
+podman build --tag edu-msa-user:latest .
+podman tag edu-msa-zuul seunghyejeong/edu-msa-user
+podman push seunghyejeong/edu-msa-user
+
+cd ~/edu-msa-file/Docker/edu-msa-ui/ 
+cd ~/edu-msa-file/Docker/edu-msa-user/ 
+cd ~/edu-msa-file/Docker/edu-msa-zuul/ 
+
+
+seunghyejeong/edu-msa-zuul:latest
+
+seunghyejeong/edu-msa-comment:latest
+seunghyejeong/edu-msa-comment:latest

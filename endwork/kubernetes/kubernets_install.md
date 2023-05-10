@@ -66,17 +66,23 @@ CNI(Container Network Interface)
 	node1  bamikube-node1
 	node2  paasta-ta-bami
 
+
+
+
 all inception에  ================================================================================== [docker install] 
 	
 https://docs.docker.com/desktop/install/linux-install/
 	
 sudo apt-get update
- 	
-sudo apt-get install -y \
+
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4D64390375060AA4
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4D64390375060AA4 
+
+sudo apt-get update
+sudo apt-get install \
 ca-certificates \
 curl \
-gnupg \
-lsb-release
+gnupg
 
 sudo mkdir -m 0755 -p /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -91,7 +97,7 @@ apt-get update
 
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
- sudo docker run hello-world
+sudo docker run hello-world
 systemctl enable docker
 systemctl start docker
 systemctl start docker
@@ -170,7 +176,7 @@ curl \
 gnupg \
 lsb-release
 # Add Docker’s official GPG key
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --yes --dearmor -o /usr/share/keyrings/docker-archive-keyring.gp
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --yes --dearmor -o /usr/share/keyrings/docker-archive-keyring.gp
 # Set up the stable repository
 echo \
 "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/lin
@@ -988,6 +994,7 @@ ubuntu@paasta-ta-bami-master:~/workspace/mariadb$ TOKEN=$(curl "https://auth.doc
 100  4415    0  4415    0     0   7019      0 --:--:-- --:--:-- --:--:--  7019
 ubuntu@paasta-ta-bami-master:~/workspace/mariadb$ ^C
 ubuntu@paasta-ta-bami-master:~/workspace/mariadb$ curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest
+
 HTTP/1.1 200 OK
 content-length: 2782
 content-type: application/vnd.docker.distribution.manifest.v1+prettyjws
