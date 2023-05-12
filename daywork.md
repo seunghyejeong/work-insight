@@ -847,3 +847,14 @@ seunghyejeong/edu-msa-zuul:latest
 
 seunghyejeong/edu-msa-comment:latest
 seunghyejeong/edu-msa-comment:latest
+
+
+# 230511
+1. sub-task
+edu-msa-ui: CICD 완료
+edu-msa-board: 진행중
+
+# 230512
+1. sub-task
+edu-msa-*: CICD 연동 완료
+	
