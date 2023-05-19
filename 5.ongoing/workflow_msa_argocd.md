@@ -815,3 +815,35 @@ DB가 private zone에 배포됐을 시에는 내부끼리 통신가능하며 배
 
 소나큐브
 argocd sync 자동?
+
+
+안녕하세요. 교수님
+
+mysql 내부 및 외부에서 접근하는 방법에 대해 안내 드립니다.
+
+service instance 를 생성하게 되면 NCP 콘솔상의 Cloud DB for Mysql 서비스에 새로운 mysql 인스턴스가 생성됩니다.
+생성된 mysql 인스턴스에 접속하는 방법은 아래와 같습니다. 
+
+# 제약조건 : 신규로 생성된 mysql의 경우 해당 ACG(방화벽)에 inbound 대상을 추가해줘야 합니다. 
+
+1. 터널링을 통한 외부 접속 
+
+tunnel vm 정보 
+server name : paasta-admin-inception
+public ip : 211.188.69.123
+user : ncloud
+pw : E9+B!$46GDAg
+
+url  : db-1htq9-kr1.vpc-cdb.gov-ntruss.com
+user : bind된 user (cf env <appname> 으로 확인가능)
+pw : bind된 pw (cf env <appname> 으로 확인가능)
+
+server name : paasta-admin-inception
+public ip : 211.188.69.123
+user : ncloud
+pw : E9+B!$46GDAg
+
+$ mysql -h db-1htq9-kr1.vpc-cdb.gov-ntruss.com -u nsb_168378574358 -p ILTiX2LpqjObesk_to4=
+
+
+mysql -h db-1i572-kr1.vpc-cdb.gov-ntruss.com -u poly 

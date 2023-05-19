@@ -107,3 +107,87 @@ IfNotPresent Always
 
 
 docker pull seunghyejeong/edu-msa-ui:1.0
+
+
+---
+(예시) 
+
+ㅇ미들웨어 : WEB/WAS ... ...
+
+ㅇ백엔드 서비스 : AI, DevOPS 도구 ... ...
+
+
+미들웨어(탑재형)		: saas/모듈(ex;화상회의/pdf전환 등) web/was, 라이브러리 
+백엔드 서비스(연동형)	: AI플랫폼, 빅데이터 플랫폼 등 별도 플랫폼 형태로 제공되는 SW
+
+
+연동형	파스-타 외부에 구축되어 파스-타와 서비스브로커 또는 
+		별도 API를 통해 연계·활용되는 SW
+		- DB, MessageQueue, Storage 등 백엔드 서비스
+		- AI플랫폼, 빅데이터 플랫폼 등 별도 플랫폼 형태로 제공되는 SW
+탑재형	파스-타에서 제공하는 컨테이너 엔진에서 실행 가능한 앱, 빌드팩, 패키지형태로 
+		파스-타의 컨테이너 상에 설치되어 작동하는 SW
+		- WEB/WAS, 라이브러리 등의 미들웨어성 SW
+		- SaaS, 모듈
+
+Middleware ? backend service ? Tell me which type is it with the closest type
+What is the closest type of backend service?
+
+티맥스클라우드				PaaS platform(backend)
+인프라닉스					PaaS platform(backend)
+오픈나루						web-agent(middleware)
+아울시스템즈					DB service(backend)
+큐브리드						DB service(backend)
+글로브포인트					VR platform(backend)
+구름							AI/SW platform(backend)
+원더풀플랫폼					API (middleware)
+팀플백						AI platform (backend)
+로데브						management service(backend)
+두드림시스템					API(middleware)
+티맥스에이아이				saas(middleware)
+위두커뮤니케이션즈			saas(middleware)
+에이콘컴퍼니					VR service(backend)
+버추얼랩						DB service(backend)
+알티베이스					DB service(backend)
+네이버 클라우드 				service-broker(backend)
+네이버 클라우드 				service-broker(backend)
+네이버 클라우드 				service-broker(backend)
+케이에듀텍 					saas(middleware)
+비즈데이터					saas(middleware)
+스패로우 					security management service(backend)
+사이람 						saas(middleware)
+제온스 						saas(middleware)
+비즈니스온커뮤니케이션		management service(backend)
+심플랫폼						saas (middleware)
+소프트인 					saas (middleware)					
+엠에이치엔씨티				saas (middleware)
+유니닥스						saas (middleware)
+인스웨이브시스템즈 			management service(backend)
+메디치소프트 					AI platform(backend)
+메디치소프트					AI platform(backend) 
+씨앤에프시스템(주) 			DB service(backend)
+
+
+ㅇ미들웨어 : web-agent, API, SaaS
+
+ㅇ백엔드 서비스 : PaaS platform, DB service, VR platform, AI/SW platform, management service, service-broker, security management service 
+
+
+
+
+
+# playpark 점검
+
+bosh vms
+bosh -d portal-api 
+monit summary
+monit restart all
+var/vcap/sys/log  error.log 확인
+
+사용자가 몰려 서버 불안정할 경우
+mariadb max connection 조절 
+기존 150 -> 500
+
+# 담당업무
+
+playpark, qna 전담

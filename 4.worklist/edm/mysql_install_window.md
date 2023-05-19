@@ -181,7 +181,7 @@ systemctl status mariadb.service
 select host, user, password from user;
 sudo mariadb -u root -p
 CREATE USER 'bami'@'localhost' IDENTIFIED BY 'tmdgP0425!';
-GRANT ALL PRIVILEGES ON *.* TO 'bami'@'localhost' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON *.* TO 'poly'@'localhost' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 mysql -u newuser -p
 

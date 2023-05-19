@@ -50,3 +50,6 @@ nslookup api.openlab-06.kr
 curl api.openlab-06.kr
 
 28080
+
+
+playpark.paas-ta.org

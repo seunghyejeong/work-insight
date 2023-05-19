@@ -856,5 +856,41 @@ edu-msa-board: 진행중
 
 # 230512
 1. sub-task
-edu-msa-*: CICD 연동 완료
-	
+edu-msa-~: CICD 연동 완료
+
+
+# 230515
+메일확인잘하자.ㅠ
+1. openlab
+- 폴리텍 기술지원 협조 
+2. sub-task
+- git-jenkins-webhook: 진행중
+
+
+http://10.101.0.145:32000/job/jenkins-webhook-github/
+
+
+# 230516
+1. sub-task
+webhook 진행 불가능할것같은뎅 ..훔
+
+# 230517
+1. 호환성 확인을 받은 미들웨어 및 백엔드 서비스의 종류
+	- 리스트업 & 시나리오 
+
+
+# 230518
+1. 확장/호환성 자료 복구
+2. sub-task
+sonarqube: 완료
+edu-msa-project CICD 구축: 완료
+	- jenkins
+	- argocd&gitops
+	- sonarqube
+
+ijnshp@irevit.co.kr
+Revit12!@@
+
+# 230519
+1. sub-task
+산출물 작성

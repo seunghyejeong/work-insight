@@ -2469,3 +2469,19 @@ b. Monitor the pipeline metrics, such as build time and success rate.
 c. Continuously improve the pipeline based on the metrics and feedback from users.
 
 This is a high-level overview of a CI workflow with Jenkins and Kubernetes. Depending on your specific application and requirements, you may need to add or modify some steps.
+
+
+# webhook
+웹훅 추가Permalink
+Payload URL - 젠킨스 서버 주소에 /github-webhook/ 경로를 추가하여 입력합니다.
+http://locahost:8080를 입력하시면 정상적으로 동작하지 않습니다.
+http://public-ip:8080 같이 공개 IP를 사용하는 경우에도 정상적으로 동작하지 않습니다.
+ngrok 어플리케이션을 통해 외부에서 접근할 수 있는 도메인을 사용합니다.
+Content type - application/json 타입을 사용합니다.
+Add webhook 버튼을 누릅니다.
+
+curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | \
+  tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && \
+  echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | \
+  tee /etc/apt/sources.list.d/ngrok.list && \
+  apt update && apt install ngrok
