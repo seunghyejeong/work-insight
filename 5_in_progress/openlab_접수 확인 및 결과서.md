@@ -336,3 +336,50 @@ paasta-nodepools-dev-w-nl6 노드가 커널 버그로 인해서 10:23 ~ 11:02 �
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 openlab을 사용함에있어 각 대학이 추구하는 교육 과정에 맞지 않은 환경을 제공하고 있다고 판단 (cf ssh 불가능, db 외부접속 제한 등) 하여 이러한 환경을 바꾸고 재설치하는 안건으로 NIA와 협의 및 내부 검토 진행중 해당 관련 문의가 오면 응대 23.05.16
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+*230524
+
+guide 작성 
+
+
+1. APP의 dbconn 부분 수정하는 내용 추가
+2. JPA 설정 관련 (mysql table 자동 생성 여부 확인)
+
+appliccation.prolerties>
+spring.jpa.hibernate.ddl-auto=create
+내용 보완 부탁드립니다. 
+
+
+query
+
+
+use kpudb;
+
+CREATE TABLE board (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(20),
+  content VARCHAR(2000)
+);
+
+INSERT INTO board (title, content) VALUES ('testappTitle-1', 'testAppContent-1');
+INSERT INTO board (title, content) VALUES ('testappTitle-2', 'testAppContent-2');
+INSERT INTO board (title, content) VALUES ('testappTitle-3', 'testAppContent-3');
+INSERT INTO board (title, content) VALUES ('testappTitle-4', 'testAppContent-4');
+INSERT INTO board (title, content) VALUES ('testappTitle-5', 'testAppContent-5');
+INSERT INTO board (title, content) VALUES ('testappTitle-6', 'testAppContent-6');
+INSERT INTO board (title, content) VALUES ('testappTitle-7', 'testAppContent-7');
+INSERT INTO board (title, content) VALUES ('testappTitle-8', 'testAppContent-8');
+INSERT INTO board (title, content) VALUES ('testappTitle-9', 'testAppContent-9');
+INSERT INTO board (title, content) VALUES ('testappTitle-10', 'testAppContent-10');
+
+
+
+
+spring.datasource.url=jdbc:mysql://133.186.143.244:3306/kpudb
+spring.datasource.username=kpu-admin
+spring.datasource.password=kpu2023!
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+spring.jpa.database=mysql
+spring.jpa.database-platform=org.hibernate.dialect.MySQL5InnoDBDialect

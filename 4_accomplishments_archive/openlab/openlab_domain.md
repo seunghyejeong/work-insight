@@ -53,3 +53,5 @@ curl api.openlab-06.kr
 
 
 playpark.paas-ta.org
+
+일시적인 서버 장애로 인해 연결이 불안정했으나 현재는 조치가 완료되어 정상적으로 이용 가능합니다.

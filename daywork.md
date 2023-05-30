@@ -894,3 +894,60 @@ Revit12!@@
 # 230519
 1. sub-task
 산출물 작성
+
+
+# 230522
+1. QnA
+문의 답변
+2. playpark
+장애대응
+
+
+# 230523
+1. 오픈랩
+- springboot sample app / mysql 연동 guide 작성 :: 진행중
+	(portal-ui/cf push 두가지 version)
+
+# 230524
+1. 오픈랩
+- springboot sample app 적용 guide 작성::완료
+	(portal-ui/cf push 두가지 version)
+2. 기술지원
+- qna 문의 답변
+
+
+
+# 230525
+- playpark
+	: cp-pipeline-service 진행중
+
+
+
+# 230526
+1. playpark 
+	- cp-pipeline-service :: 설치 완료
+	- cp-source-control-service :: 설치 완료
+
+
+# 230530
+- playpark cp portal, service(pipeline,source-control): 설치 완료
+- playpark cp test
+	portal: 정상 작동 
+		admin 계정으로 관리자 승인 대기 
+
+	pipeline: web ui에서 작동 안함
+	source-control: web ui에서 작동 안함
+
+- 호환성(메디치소프트)가이드: 장나영전임님 : 완료 
+	: 희망 날짜 6월 7일 (시간 정한 후 메일 회신) 
+	-> 메일 회신 후 캘린더 회의실 잡기
+	-> 엑셀 시트 업데이트
+
+	-> 사전 협의시 추가 전달내용: 메일은 담당자와 주고받기, 참조 걸어주기 덧붙여 회신
+
+
+
+# 230531
+- 몽골 과기대 AP/CP 전체 설치 
+	: 진행예정
+

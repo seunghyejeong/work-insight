@@ -24,12 +24,6 @@ jenkins home
 	- jenkins-> global configuration -> sonarqube scanner 등록
 	- jenkins-> system 설정 -> sonarqube server 등록
 
-sonar.login=b5b113ea36416fddf79f214bb6694cb902798277 
-sonar.projectKey=always-try  
-sonar.projectName=always-try   
-sonar.host.url=http://localhost:9000/    
-sonar.projectVersion=1.0
-sonar.sourceEncoding=UTF-8
 
 http://10.101.0.145//job/sonarqube/build?token=jenkins-sonarqube-token
 
